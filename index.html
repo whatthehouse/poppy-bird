@@ -1588,21 +1588,39 @@ function panel(x,y,w,h){
 // shrink the font until `text` fits maxWidth — Thai script falls back to a
 // different system font per device (Trebuchet MS has no Thai glyphs), so the
 // rendered width varies a lot between desktop and mobile; never assume it fits.
-// iOS Safari can also paint emoji+Thai combos visibly wider than measureText()
-// reports, so a 30% safety margin is applied on top of the raw measurement.
+// A 30% safety margin is kept on top of the raw measurement as a backstop.
+function setFont(size, bold){ ctx.font = (bold?'bold ':'') + size + 'px Trebuchet MS, Tahoma, sans-serif'; }
 function fitFont(text, maxWidth, baseSize, bold){
   let size = baseSize;
-  const mk = s => (bold?'bold ':'') + s + 'px Trebuchet MS, Tahoma, sans-serif';
-  ctx.font = mk(size);
-  while (ctx.measureText(text).width * 1.3 > maxWidth && size > 8) { size--; ctx.font = mk(size); }
+  setFont(size, bold);
+  while (ctx.measureText(text).width * 1.3 > maxWidth && size > 8) { size--; setFont(size, bold); }
   return size;
 }
 function button(x,y,w,h,label,bg,fg,action){
   ctx.fillStyle=bg; rr(x,y,w,h,12);
-  ctx.fillStyle=fg;
-  fitFont(label, w-30, 18, true);
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText(label, x+w/2, y+h/2+1);
+  ctx.fillStyle=fg; ctx.textBaseline='middle';
+  // split a leading icon ("🛒  ร้านค้า" -> "🛒" + "ร้านค้า") and measure/draw it
+  // separately from the text — iOS Safari can paint emoji wider than it
+  // reports via measureText(), which previously corrupted the Thai-text fit
+  const m = label.match(/^(\S+)\s+(.*)$/);
+  if (m) {
+    const icon = m[1], text = m[2];
+    setFont(18, true);
+    const iconW = ctx.measureText(icon).width;
+    const gap = 8;
+    const textSize = fitFont(text, w - iconW - gap - 22, 18, true);
+    const textW = ctx.measureText(text).width;
+    const startX = x + w/2 - (iconW+gap+textW)/2;
+    ctx.textAlign='left';
+    setFont(18, true);
+    ctx.fillText(icon, startX, y+h/2+1);
+    setFont(textSize, true);
+    ctx.fillText(text, startX+iconW+gap, y+h/2+1);
+  } else {
+    ctx.textAlign='center';
+    fitFont(label, w-30, 18, true);
+    ctx.fillText(label, x+w/2, y+h/2+1);
+  }
   uiButtons.push({x,y,w,h,action});
 }
 
