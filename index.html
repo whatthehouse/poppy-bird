@@ -13,7 +13,7 @@
     background: #2b1b4d;
     font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
     user-select: none;
-    touch-action: manipulation;
+    touch-action: none;            /* kill double-tap zoom so fast taps never get swallowed */
   }
   #wrap {
     position: fixed;
@@ -22,6 +22,7 @@
     align-items: center;
     justify-content: center;
     background: radial-gradient(circle at 50% 30%, #4a3a7a, #1a1030);
+    touch-action: none;
   }
   canvas {
     display: block;
@@ -31,6 +32,7 @@
     max-width: 100%;
     max-height: 100%;
     image-rendering: -webkit-optimize-contrast;
+    touch-action: none;
   }
   #hint {
     position: fixed;
@@ -461,6 +463,7 @@ function flap() {
 
 function onPress(pos){
   Sound.init();
+  if (Sound.ctx && Sound.ctx.state === 'suspended') Sound.ctx.resume();
   // on-screen buttons (menu / shop / game-over) take priority
   for (const b of uiButtons){ if (inRect(pos,b)){ b.action(); return; } }
   if (state === STATE.PLAY)  { flap(); return; }
@@ -485,8 +488,18 @@ window.addEventListener('keydown', e => {
   else if (e.key === 'p' || e.key === 'P') { if(state===STATE.PLAY) state=STATE.PAUSE; else if(state===STATE.PAUSE) state=STATE.PLAY; }
   else if (e.key === 'm' || e.key === 'M') { Sound.muted = !Sound.muted; }
 });
-cv.addEventListener('mousedown', e => { e.preventDefault(); onPress(getPos(e)); });
-cv.addEventListener('touchstart', e => { e.preventDefault(); onPress(getPos(e)); }, {passive:false});
+// listen on the whole window (not just the canvas) so taps in the letterbox
+// margins around the canvas still register as a flap
+let lastTouchAt = 0;
+window.addEventListener('touchstart', e => {
+  e.preventDefault();
+  lastTouchAt = Date.now();
+  onPress(getPos(e));
+}, {passive:false});
+window.addEventListener('mousedown', e => {
+  if (Date.now() - lastTouchAt < 700) return;   // ignore the synthetic click fired after a touch
+  onPress(getPos(e));
+});
 
 /* ----------------------------- Lifecycle --------------------------------- */
 let overFrame = 0;
