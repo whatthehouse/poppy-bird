@@ -1585,9 +1585,20 @@ function panel(x,y,w,h){
   ctx.arcTo(x,y,x+w,y,18); ctx.closePath(); ctx.stroke();
 }
 
+// shrink the font until `text` fits maxWidth — Thai script falls back to a
+// different system font per device (Trebuchet MS has no Thai glyphs), so the
+// rendered width varies a lot between desktop and mobile; never assume it fits
+function fitFont(text, maxWidth, baseSize, bold){
+  let size = baseSize;
+  const mk = s => (bold?'bold ':'') + s + 'px Trebuchet MS';
+  ctx.font = mk(size);
+  while (ctx.measureText(text).width > maxWidth && size > 10) { size--; ctx.font = mk(size); }
+  return size;
+}
 function button(x,y,w,h,label,bg,fg,action){
   ctx.fillStyle=bg; rr(x,y,w,h,12);
-  ctx.fillStyle=fg; ctx.font='bold 19px Trebuchet MS';
+  ctx.fillStyle=fg;
+  fitFont(label, w-18, 19, true);
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText(label, x+w/2, y+h/2+1);
   uiButtons.push({x,y,w,h,action});
@@ -1607,9 +1618,11 @@ function drawMenu(){
   drawBirdSkin(currentSkin(), (frame%30<15)?8:0);
   ctx.restore();
 
-  ctx.fillStyle='#888'; ctx.font='15px Trebuchet MS';
+  ctx.fillStyle='#888';
   const bestLabel = playMode==='levels' ? '🗺️ ปลดล็อกถึงด่าน '+unlockedLevel+'/'+MAX_LEVEL : '🏆 สูงสุด: '+best;
-  ctx.fillText(bestLabel+'      💰 '+wallet, W/2, py+208);
+  const bestFull = bestLabel+'      💰 '+wallet;
+  fitFont(bestFull, pw-30, 15, false);
+  ctx.fillText(bestFull, W/2, py+208);
 
   let by = py+228;
   const modeLabel = playMode==='endless' ? '♾️  โหมด: ไม่จำกัด' : '🎯  โหมด: ผ่านด่าน';
@@ -1641,8 +1654,10 @@ function drawThemes(){
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillStyle='#ff7b3a'; ctx.font='bold 26px Trebuchet MS';
   ctx.fillText('🎨 เลือกธีม', W/2, py+30);
-  ctx.fillStyle='#888'; ctx.font='13px Trebuchet MS';
-  ctx.fillText('ธีมจะคงเดิมทั้งรอบ (เช้า/เย็น/กลางคืนยังเปลี่ยน)', W/2, py+56);
+  ctx.fillStyle='#888';
+  const themeSub = 'ธีมจะคงเดิมทั้งรอบ (เช้า/เย็น/กลางคืนยังเปลี่ยน)';
+  fitFont(themeSub, pw-30, 13, false);
+  ctx.fillText(themeSub, W/2, py+56);
 
   const cols=2, cw=140, ch=78, gapx=16, gapy=14;
   const gx0 = px + (pw - (cols*cw + (cols-1)*gapx))/2, gy0 = py+82;
@@ -1682,16 +1697,21 @@ function drawOver(){
   ctx.fillText(score, W/2, py+118);
 
   if (playMode === 'levels') {
-    ctx.fillStyle = '#4a90d9'; ctx.font = '15px Trebuchet MS';
-    ctx.fillText('🗺️ ปลดล็อกถึงด่าน '+unlockedLevel+'/'+MAX_LEVEL, W/2, py+154);
+    ctx.fillStyle = '#4a90d9';
+    const unlockLine = '🗺️ ปลดล็อกถึงด่าน '+unlockedLevel+'/'+MAX_LEVEL;
+    fitFont(unlockLine, pw-30, 15, false);
+    ctx.fillText(unlockLine, W/2, py+154);
   } else {
     ctx.fillStyle = newRecord ? '#ff9f1c' : '#888';
-    ctx.font = newRecord ? 'bold 17px Trebuchet MS':'15px Trebuchet MS';
-    ctx.fillText(newRecord ? '🎉 สถิติใหม่!' : '🏆 สูงสุด: '+best, W/2, py+154);
+    const recordLine = newRecord ? '🎉 สถิติใหม่!' : '🏆 สูงสุด: '+best;
+    fitFont(recordLine, pw-30, 15, newRecord);
+    ctx.fillText(recordLine, W/2, py+154);
   }
 
-  ctx.fillStyle='#b8860b'; ctx.font='15px Trebuchet MS';
-  ctx.fillText('💰 รอบนี้ '+coinCount+'  •  รวม '+wallet, W/2, py+180);
+  ctx.fillStyle='#b8860b';
+  const coinLine = '💰 รอบนี้ '+coinCount+'  •  รวม '+wallet;
+  fitFont(coinLine, pw-30, 15, false);
+  ctx.fillText(coinLine, W/2, py+180);
 
   if (frame-overFrame>25){
     const bw=pw-90;
@@ -1718,8 +1738,10 @@ function drawWin(){
   ctx.fillStyle='#ff9f1c'; ctx.font='bold 17px Trebuchet MS';
   ctx.fillText('🎉 ปลดล็อกครบทุกด่านแล้ว', W/2, py+122);
 
-  ctx.fillStyle='#b8860b'; ctx.font='15px Trebuchet MS';
-  ctx.fillText('💰 รอบนี้ '+coinCount+'  •  รวม '+wallet, W/2, py+154);
+  ctx.fillStyle='#b8860b';
+  const winCoinLine = '💰 รอบนี้ '+coinCount+'  •  รวม '+wallet;
+  fitFont(winCoinLine, pw-30, 15, false);
+  ctx.fillText(winCoinLine, W/2, py+154);
 
   if (frame-overFrame>25){
     const bw=pw-90;
@@ -1742,8 +1764,10 @@ function drawLevelClear(){
   ctx.fillStyle='#333'; ctx.font='bold 44px Trebuchet MS';
   ctx.fillText(score, W/2, py+126);
 
-  ctx.fillStyle='#b8860b'; ctx.font='15px Trebuchet MS';
-  ctx.fillText('💰 รอบนี้ '+coinCount+'  •  รวม '+wallet, W/2, py+158);
+  ctx.fillStyle='#b8860b';
+  const clearCoinLine = '💰 รอบนี้ '+coinCount+'  •  รวม '+wallet;
+  fitFont(clearCoinLine, pw-30, 15, false);
+  ctx.fillText(clearCoinLine, W/2, py+158);
 
   if (frame-overFrame>25){
     const bw=pw-90;
@@ -1804,8 +1828,10 @@ function drawShop(){
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillStyle='#ff7b3a'; ctx.font='bold 27px Trebuchet MS';
   ctx.fillText('🛒 ร้านสกินนก', W/2, py+28);
-  ctx.fillStyle='#b8860b'; ctx.font='bold 17px Trebuchet MS';
-  ctx.fillText('💰 เหรียญสะสม: '+wallet, W/2, py+55);
+  ctx.fillStyle='#b8860b';
+  const walletLine = '💰 เหรียญสะสม: '+wallet;
+  fitFont(walletLine, pw-30, 17, true);
+  ctx.fillText(walletLine, W/2, py+55);
 
   const cols=3, cw=98, ch=104, gx0=px+(pw-(cols*cw+(cols-1)*12))/2, gy0=py+78;
   SKINS.forEach((sk,i)=>{
