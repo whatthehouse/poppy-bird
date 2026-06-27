@@ -1458,7 +1458,7 @@ function drawPowerup(pu){
   ctx.shadowBlur = 0;
   ctx.fillStyle = def.color;
   ctx.beginPath(); ctx.arc(pu.x, y, pu.r-4, 0, Math.PI*2); ctx.fill();
-  ctx.font = '18px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.font = '18px Trebuchet MS, Tahoma, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText(def.glyph, pu.x, y+1);
   ctx.restore();
 }
@@ -1529,7 +1529,7 @@ function drawHUD(){
     const w = 86, frac = active[k]/def.dur;
     ctx.fillStyle='rgba(0,0,0,.25)'; rr(12, py, w, 16, 8);
     ctx.fillStyle=def.color; rr(12, py, w*frac, 16, 8);
-    ctx.font='12px serif'; ctx.fillStyle='#fff'; ctx.textBaseline='middle'; ctx.textAlign='left';
+    ctx.font='12px Trebuchet MS, Tahoma, sans-serif'; ctx.fillStyle='#fff'; ctx.textBaseline='middle'; ctx.textAlign='left';
     ctx.fillText(def.glyph+' '+def.label, 16, py+9);
     py += 22; idx++;
   }
@@ -1675,12 +1675,13 @@ function drawThemes(){
   ctx.fillStyle='#ff7b3a'; ctx.font='bold 26px Trebuchet MS';
   ctx.fillText('🎨 เลือกธีม', W/2, py+30);
   ctx.fillStyle='#888';
-  const themeSub = 'ธีมจะคงเดิมทั้งรอบ (เช้า/เย็น/กลางคืนยังเปลี่ยน)';
-  fitFont(themeSub, pw-30, 13, false);
-  ctx.fillText(themeSub, W/2, py+56);
+  // too long to safely fit one line on a phone at any readable size — wrap it
+  setFont(13, false);
+  ctx.fillText('ธีมจะคงเดิมทั้งรอบ', W/2, py+50);
+  ctx.fillText('(เช้า/เย็น/กลางคืนยังเปลี่ยน)', W/2, py+68);
 
   const cols=2, cw=140, ch=78, gapx=16, gapy=14;
-  const gx0 = px + (pw - (cols*cw + (cols-1)*gapx))/2, gy0 = py+82;
+  const gx0 = px + (pw - (cols*cw + (cols-1)*gapx))/2, gy0 = py+96;
   SCENES.forEach((sc,i)=>{
     const col=i%cols, row=(i/cols|0);
     const x=gx0+col*(cw+gapx), y=gy0+row*(ch+gapy);
@@ -1693,11 +1694,11 @@ function drawThemes(){
     ctx.beginPath();
     ctx.moveTo(x+12,y); ctx.arcTo(x+cw,y,x+cw,y+ch,12); ctx.arcTo(x+cw,y+ch,x,y+ch,12);
     ctx.arcTo(x,y+ch,x,y,12); ctx.arcTo(x,y,x+cw,y,12); ctx.closePath(); ctx.stroke();
-    ctx.font='30px serif'; ctx.fillText(sc.icon, x+cw/2, y+30);
+    ctx.font='30px Trebuchet MS, Tahoma, sans-serif'; ctx.fillText(sc.icon, x+cw/2, y+30);
     ctx.font='bold 16px Trebuchet MS';
     ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.35)'; ctx.strokeText(sc.name, x+cw/2, y+58);
     ctx.fillStyle='#fff'; ctx.fillText(sc.name, x+cw/2, y+58);
-    if (sel){ ctx.fillStyle='#ffd23f'; ctx.font='16px serif'; ctx.textAlign='right'; ctx.fillText('✓', x+cw-10, y+16); ctx.textAlign='center'; }
+    if (sel){ ctx.fillStyle='#ffd23f'; ctx.font='16px Trebuchet MS, Tahoma, sans-serif'; ctx.textAlign='right'; ctx.fillText('✓', x+cw-10, y+16); ctx.textAlign='center'; }
     uiButtons.push({x,y,w:cw,h:ch, action:()=>{ endlessTheme=sc.id; saveEndlessTheme(); Sound.score(); }});
   });
 
@@ -1826,7 +1827,7 @@ function drawLevels(){
 
     ctx.textAlign='right';
     if (!unlocked){
-      ctx.font='20px serif'; ctx.fillText('🔒', gx+gw-18, y+tileH/2);
+      ctx.font='20px Trebuchet MS, Tahoma, sans-serif'; ctx.fillText('🔒', gx+gw-18, y+tileH/2);
     } else if (cleared){
       ctx.fillStyle='#5fae37'; ctx.font='bold 16px Trebuchet MS'; ctx.fillText('✓ ผ่านแล้ว', gx+gw-18, y+tileH/2);
     } else {
@@ -1873,8 +1874,8 @@ function drawShop(){
     ctx.restore();
     // badges
     ctx.textAlign='left'; ctx.textBaseline='alphabetic';
-    if (sk.fx){ ctx.font='13px serif'; ctx.fillText('✨', x+8, y+18); }
-    if (!owned){ ctx.font='15px serif'; ctx.textAlign='right'; ctx.fillText('🔒', x+cw-8, y+18); }
+    if (sk.fx){ ctx.font='13px Trebuchet MS, Tahoma, sans-serif'; ctx.fillText('✨', x+8, y+18); }
+    if (!owned){ ctx.font='15px Trebuchet MS, Tahoma, sans-serif'; ctx.textAlign='right'; ctx.fillText('🔒', x+cw-8, y+18); }
     // name
     ctx.fillStyle='#444'; ctx.font='bold 13px Trebuchet MS'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText(sk.name, x+cw/2, y+68);
