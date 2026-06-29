@@ -56,7 +56,7 @@
 <div id="wrap">
   <canvas id="game" width="400" height="700"></canvas>
 </div>
-<div id="hint">แตะ / คลิก / กด Space เพื่อบิน &nbsp;•&nbsp; P = พัก &nbsp;•&nbsp; M = ปิดเสียง</div>
+<div id="hint">แตะ / คลิก / กด Space เพื่อบิน &nbsp;/&nbsp; P = พัก &nbsp;/&nbsp; M = ปิดเสียง</div>
 <script>
 "use strict";
 /* =========================================================================
@@ -1514,6 +1514,29 @@ function drawParticles(){
   ctx.globalAlpha = 1;
 }
 
+// drawn gold coin — replaces the 💰 emoji which tofus on some mobile WebViews
+function coinIcon(x, y, r){
+  const g = ctx.createRadialGradient(x-r*0.35, y-r*0.35, r*0.2, x, y, r);
+  g.addColorStop(0, '#ffe98a'); g.addColorStop(1, '#e0a800');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#fff0b0';
+  ctx.beginPath(); ctx.arc(x, y, r*0.55, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#c98f00'; ctx.lineWidth = Math.max(1, r*0.14);
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.stroke();
+}
+// draw a centered "[coin] text" line; returns nothing
+function coinLabel(text, cx, cy, fontPx, bold, color){
+  setFont(fontPx, bold);
+  ctx.textBaseline = 'middle';
+  const tw = ctx.measureText(text).width;
+  const r = fontPx*0.5, gap = fontPx*0.32;
+  const startX = cx - (r*2 + gap + tw)/2;
+  coinIcon(startX + r, cy, r);
+  ctx.fillStyle = color; ctx.textAlign = 'left';
+  ctx.fillText(text, startX + r*2 + gap, cy);
+}
+
 function drawHUD(){
   // score
   ctx.font = 'bold 52px Mali';
@@ -1644,11 +1667,21 @@ function drawMenu(){
   drawBirdSkin(currentSkin(), (frame%30<15)?8:0);
   ctx.restore();
 
+  // left = best/unlock text, right = coin icon + wallet, laid out centered together
+  const bestLabel = playMode==='levels' ? 'ปลดล็อกถึงด่าน '+unlockedLevel+'/'+MAX_LEVEL : '🏆 สูงสุด: '+best;
+  const wstr = ''+wallet;
+  let fpx = 15;
+  setFont(fpx, false);
+  const sep=18, r=7, gap=5;
+  let total = ctx.measureText(bestLabel).width + sep + r*2 + gap + ctx.measureText(wstr).width;
+  while (total > pw-24 && fpx > 10) { fpx--; setFont(fpx,false); total = ctx.measureText(bestLabel).width + sep + r*2 + gap + ctx.measureText(wstr).width; }
+  let sx = W/2 - total/2;
+  ctx.fillStyle='#888'; ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.fillText(bestLabel, sx, py+208);
+  const coinX = sx + ctx.measureText(bestLabel).width + sep + r;
+  coinIcon(coinX, py+208, r);
   ctx.fillStyle='#888';
-  const bestLabel = playMode==='levels' ? '🗺️ ปลดล็อกถึงด่าน '+unlockedLevel+'/'+MAX_LEVEL : '🏆 สูงสุด: '+best;
-  const bestFull = bestLabel+'      💰 '+wallet;
-  fitFont(bestFull, pw-30, 15, false);
-  ctx.fillText(bestFull, W/2, py+208);
+  ctx.fillText(wstr, coinX + r + gap, py+208);
 
   let by = py+228;
   const modeLabel = playMode==='endless' ? '♾️  โหมด: ไม่จำกัด' : '🎯  โหมด: ผ่านด่าน';
@@ -1665,7 +1698,7 @@ function drawMenu(){
     by += 44;
   }
 
-  const playLabel = playMode==='endless' ? '▶  เล่น' : '🗺️  เลือกด่าน';
+  const playLabel = playMode==='endless' ? '▶  เล่น' : ' เลือกด่าน';
   button(px+50, by, pw-100, 44, playLabel, '#7ad24f', '#fff', ()=>{
     if (playMode==='endless') startGame(); else state = STATE.LEVELS;
   });
@@ -1787,7 +1820,7 @@ function drawOver(){
 
   if (playMode === 'levels') {
     ctx.fillStyle = '#4a90d9';
-    const unlockLine = '🗺️ ปลดล็อกถึงด่าน '+unlockedLevel+'/'+MAX_LEVEL;
+    const unlockLine = 'ปลดล็อกถึงด่าน '+unlockedLevel+'/'+MAX_LEVEL;
     fitFont(unlockLine, pw-30, 15, false);
     ctx.fillText(unlockLine, W/2, py+154);
   } else {
@@ -1797,10 +1830,7 @@ function drawOver(){
     ctx.fillText(recordLine, W/2, py+154);
   }
 
-  ctx.fillStyle='#b8860b';
-  const coinLine = '💰 รอบนี้ '+coinCount+'  •  รวม '+wallet;
-  fitFont(coinLine, pw-30, 15, false);
-  ctx.fillText(coinLine, W/2, py+180);
+  coinLabel('รอบนี้ '+coinCount+'  /  รวม '+wallet, W/2, py+182, 15, false, '#b8860b');
 
   if (frame-overFrame>25){
     const bw=pw-90;
@@ -1808,7 +1838,7 @@ function drawOver(){
     const hw=(bw-10)/2;
     button(px+45,       py+252, hw, 36, '🛒 ร้าน', '#4a90d9','#fff', ()=>{ state=STATE.SHOP; });
     if (playMode === 'levels')
-      button(px+55+hw, py+252, hw, 36, '🗺️ ด่าน', '#9b7bff','#fff', ()=>{ state=STATE.LEVELS; });
+      button(px+55+hw, py+252, hw, 36, 'ด่าน', '#9b7bff','#fff', ()=>{ state=STATE.LEVELS; });
     else
       button(px+55+hw, py+252, hw, 36, '🏠 เมนู', '#9b7bff','#fff', ()=>{ state=STATE.MENU; });
   }
@@ -1827,17 +1857,14 @@ function drawWin(){
   ctx.fillStyle='#ff9f1c'; ctx.font='bold 17px Mali';
   ctx.fillText('🎉 ปลดล็อกครบทุกด่านแล้ว', W/2, py+122);
 
-  ctx.fillStyle='#b8860b';
-  const winCoinLine = '💰 รอบนี้ '+coinCount+'  •  รวม '+wallet;
-  fitFont(winCoinLine, pw-30, 15, false);
-  ctx.fillText(winCoinLine, W/2, py+154);
+  coinLabel('รอบนี้ '+coinCount+'  /  รวม '+wallet, W/2, py+156, 15, false, '#b8860b');
 
   if (frame-overFrame>25){
     const bw=pw-90;
     button(px+45, py+178, bw, 42, '🔁  เล่นด่าน 1 ใหม่', '#7ad24f','#fff', ()=>startLevel(1));
     const hw=(bw-10)/2;
     button(px+45,       py+228, hw, 36, '🛒 ร้าน', '#4a90d9','#fff', ()=>{ state=STATE.SHOP; });
-    button(px+55+hw,    py+228, hw, 36, '🗺️ ด่าน', '#9b7bff','#fff', ()=>{ state=STATE.LEVELS; });
+    button(px+55+hw,    py+228, hw, 36, 'ด่าน', '#9b7bff','#fff', ()=>{ state=STATE.LEVELS; });
   }
 }
 
@@ -1853,17 +1880,14 @@ function drawLevelClear(){
   ctx.fillStyle='#333'; ctx.font='bold 44px Mali';
   ctx.fillText(score, W/2, py+126);
 
-  ctx.fillStyle='#b8860b';
-  const clearCoinLine = '💰 รอบนี้ '+coinCount+'  •  รวม '+wallet;
-  fitFont(clearCoinLine, pw-30, 15, false);
-  ctx.fillText(clearCoinLine, W/2, py+158);
+  coinLabel('รอบนี้ '+coinCount+'  /  รวม '+wallet, W/2, py+160, 15, false, '#b8860b');
 
   if (frame-overFrame>25){
     const bw=pw-90;
     button(px+45, py+182, bw, 42, '▶  ด่าน '+(level+1), '#7ad24f','#fff', ()=>startLevel(level+1));
     const hw=(bw-10)/2;
     button(px+45,       py+232, hw, 36, '🛒 ร้าน', '#4a90d9','#fff', ()=>{ state=STATE.SHOP; });
-    button(px+55+hw,    py+232, hw, 36, '🗺️ ด่าน', '#9b7bff','#fff', ()=>{ state=STATE.LEVELS; });
+    button(px+55+hw,    py+232, hw, 36, 'ด่าน', '#9b7bff','#fff', ()=>{ state=STATE.LEVELS; });
   }
 }
 
@@ -1873,7 +1897,7 @@ function drawLevels(){
   panel(px,py,pw,ph);
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillStyle='#ff7b3a'; ctx.font='bold 26px Mali';
-  ctx.fillText('🗺️ เลือกด่าน', W/2, py+32);
+  ctx.fillText('เลือกด่าน', W/2, py+32);
   ctx.fillStyle='#888'; ctx.font='13px Mali';
   ctx.fillText('ผ่านด่านก่อนหน้าเพื่อปลดล็อกด่านต่อไป', W/2, py+58);
 
@@ -1917,10 +1941,7 @@ function drawShop(){
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillStyle='#ff7b3a'; ctx.font='bold 27px Mali';
   ctx.fillText('🛒 ร้านสกินนก', W/2, py+28);
-  ctx.fillStyle='#b8860b';
-  const walletLine = '💰 เหรียญสะสม: '+wallet;
-  fitFont(walletLine, pw-30, 17, true);
-  ctx.fillText(walletLine, W/2, py+55);
+  coinLabel('เหรียญสะสม: '+wallet, W/2, py+55, 17, true, '#b8860b');
 
   const cols=3, cw=98, ch=104, gx0=px+(pw-(cols*cw+(cols-1)*12))/2, gy0=py+78;
   SKINS.forEach((sk,i)=>{
@@ -1950,7 +1971,7 @@ function drawShop(){
     // status line
     if (sel){ ctx.fillStyle='#5fae37'; ctx.font='bold 13px Mali'; ctx.fillText('✓ ใช้อยู่', x+cw/2, y+88); }
     else if (owned){ ctx.fillStyle='#4a90d9'; ctx.font='13px Mali'; ctx.fillText('แตะเพื่อใช้', x+cw/2, y+88); }
-    else { ctx.fillStyle = wallet>=sk.price?'#b8860b':'#c0392b'; ctx.font='bold 13px Mali'; ctx.fillText('💰 '+sk.price, x+cw/2, y+88); }
+    else { coinLabel(''+sk.price, x+cw/2, y+90, 13, true, wallet>=sk.price?'#b8860b':'#c0392b'); }
     // tile action
     uiButtons.push({x,y,w:cw,h:ch, action:()=>{
       if (owned){ selectedSkin=sk.id; saveSkins(); Sound.score(); }
