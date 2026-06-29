@@ -1667,6 +1667,71 @@ function drawMenu(){
   button(px+50, by, pw-100, 40, '🛒  ร้านค้า', '#4a90d9', '#fff', ()=>{ state=STATE.SHOP; });
 }
 
+// Hand-drawn vector icon per scene — pure shapes/paths, no font or emoji
+// dependency at all, so it renders identically on every device.
+function drawThemeIcon(id, cx, cy, s){
+  ctx.save(); ctx.translate(cx, cy);
+  if (id === 'meadow') {
+    ctx.fillStyle = '#5fae37';
+    ctx.beginPath(); ctx.ellipse(0, s*0.30, s*0.62, s*0.26, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#7a5230'; ctx.fillRect(-s*0.04, -s*0.06, s*0.08, s*0.24);
+    ctx.fillStyle = '#3f7a26';
+    ctx.beginPath(); ctx.arc(0, -s*0.18, s*0.22, 0, Math.PI*2); ctx.fill();
+  } else if (id === 'ocean') {
+    ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = s*0.07; ctx.lineCap = 'round';
+    for (let i=-1; i<=1; i++) {
+      ctx.beginPath();
+      ctx.moveTo(-s*0.5, i*s*0.2);
+      ctx.quadraticCurveTo(-s*0.2, i*s*0.2 - s*0.14, 0, i*s*0.2);
+      ctx.quadraticCurveTo(s*0.2, i*s*0.2 + s*0.14, s*0.5, i*s*0.2);
+      ctx.stroke();
+    }
+  } else if (id === 'desert') {
+    ctx.fillStyle = '#e0a85a';
+    ctx.beginPath(); ctx.ellipse(0, s*0.32, s*0.6, s*0.22, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#4f8a37';
+    ctx.fillRect(-s*0.06, -s*0.22, s*0.12, s*0.42);
+    ctx.fillRect(-s*0.22, -s*0.02, s*0.15, s*0.09);
+    ctx.fillRect(s*0.07, -s*0.1, s*0.15, s*0.09);
+  } else if (id === 'volcano') {
+    ctx.fillStyle = '#5a3326';
+    ctx.beginPath(); ctx.moveTo(-s*0.45,s*0.4); ctx.lineTo(0,-s*0.4); ctx.lineTo(s*0.45,s*0.4); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#ff7b3a';
+    ctx.beginPath(); ctx.moveTo(-s*0.13,-s*0.3); ctx.lineTo(0,-s*0.58); ctx.lineTo(s*0.13,-s*0.3); ctx.closePath(); ctx.fill();
+  } else if (id === 'arctic') {
+    ctx.fillStyle = '#dceefc';
+    ctx.beginPath(); ctx.moveTo(-s*0.45,s*0.4); ctx.lineTo(0,-s*0.45); ctx.lineTo(s*0.45,s*0.4); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#aeefff';
+    ctx.beginPath(); ctx.moveTo(-s*0.16,s*0.05); ctx.lineTo(0,-s*0.45); ctx.lineTo(s*0.16,s*0.05); ctx.closePath(); ctx.fill();
+  } else if (id === 'city') {
+    const hs = [0.5, 0.75, 0.55, 0.85];
+    let bx = -s*0.46;
+    ctx.fillStyle = '#5b6577';
+    for (const h of hs) { const bw=s*0.22; ctx.fillRect(bx, s*0.4-s*h, bw, s*h); bx += bw + s*0.04; }
+    ctx.fillStyle = 'rgba(255,230,140,.9)';
+    bx = -s*0.46;
+    for (const h of hs) { const bw=s*0.22; ctx.fillRect(bx+bw*0.3, s*0.4-s*h+s*0.1, bw*0.3, bw*0.3); bx += bw + s*0.04; }
+  } else if (id === 'space') {
+    ctx.fillStyle = '#ffb27a';
+    ctx.beginPath(); ctx.arc(0,0,s*0.32,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = s*0.05;
+    ctx.beginPath(); ctx.ellipse(0,0,s*0.5,s*0.16,-0.3,0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle = '#fff';
+    for (let i=0;i<5;i++){ const a=i*1.4; ctx.beginPath(); ctx.arc(Math.cos(a)*s*0.55, Math.sin(a)*s*0.3 - s*0.32, 2, 0, Math.PI*2); ctx.fill(); }
+  }
+  ctx.restore();
+}
+function drawCheckBadge(cx, cy, r){
+  ctx.save(); ctx.translate(cx, cy);
+  ctx.fillStyle = '#ffd23f';
+  ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = r*0.32; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-r*0.45, 0); ctx.lineTo(-r*0.1, r*0.4); ctx.lineTo(r*0.5, -r*0.4);
+  ctx.stroke();
+  ctx.restore();
+}
+
 function drawThemes(){
   ctx.fillStyle='rgba(0,0,0,.4)'; ctx.fillRect(0,0,W,H);
   const pw=340, ph=560, px=(W-pw)/2, py=70;
@@ -1694,11 +1759,8 @@ function drawThemes(){
     ctx.beginPath();
     ctx.moveTo(x+12,y); ctx.arcTo(x+cw,y,x+cw,y+ch,12); ctx.arcTo(x+cw,y+ch,x,y+ch,12);
     ctx.arcTo(x,y+ch,x,y,12); ctx.arcTo(x,y,x+cw,y,12); ctx.closePath(); ctx.stroke();
-    ctx.font='30px Trebuchet MS, Tahoma, sans-serif'; ctx.fillText(sc.icon, x+cw/2, y+30);
-    ctx.font='bold 16px Trebuchet MS';
-    ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.35)'; ctx.strokeText(sc.name, x+cw/2, y+58);
-    ctx.fillStyle='#fff'; ctx.fillText(sc.name, x+cw/2, y+58);
-    if (sel){ ctx.fillStyle='#ffd23f'; ctx.font='16px Trebuchet MS, Tahoma, sans-serif'; ctx.textAlign='right'; ctx.fillText('✓', x+cw-10, y+16); ctx.textAlign='center'; }
+    drawThemeIcon(sc.id, x+cw/2, y+ch/2+4, 64);
+    if (sel) drawCheckBadge(x+cw-16, y+16, 11);
     uiButtons.push({x,y,w:cw,h:ch, action:()=>{ endlessTheme=sc.id; saveEndlessTheme(); Sound.score(); }});
   });
 
