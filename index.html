@@ -181,37 +181,54 @@ function currentSkin(){ return SKINS.find(s => s.id === selectedSkin) || SKINS[0
 
 /* Generic bird drawer at local origin (0,0) for any skin */
 function drawBirdSkin(sk, flapTimer){
-  let body = sk.body, shade = sk.shade, wing = sk.wing;
-  if (sk.fx === 'rainbow'){               // cycle the whole bird through the spectrum
+  let body = sk.body, shade = sk.shade, wing = sk.wing, beak = sk.beak;
+  if (sk.fx === 'rainbow'){
     const h = (frame*6) % 360;
     body  = 'hsl('+h+',85%,62%)';
     shade = 'hsl('+h+',85%,48%)';
     wing  = 'hsl('+((h+40)%360)+',90%,78%)';
   }
-  // body: radial gradient (light upper-left, dark lower-right) for a glossy 3D-ball look
-  const bodyGrad = ctx.createRadialGradient(-6,-6,2, 0,0,22);
-  bodyGrad.addColorStop(0, lightenColor(body, 0.45));
-  bodyGrad.addColorStop(0.6, body);
-  bodyGrad.addColorStop(1, shade);
-  ctx.fillStyle = bodyGrad; ctx.beginPath(); ctx.ellipse(0,0,19,17,0,0,Math.PI*2); ctx.fill();
-  // rim shadow on the lower-right edge for extra depth
-  ctx.save();
-  ctx.beginPath(); ctx.ellipse(0,0,19,17,0,0,Math.PI*2); ctx.clip();
-  ctx.fillStyle = 'rgba(0,0,0,.18)';
-  ctx.beginPath(); ctx.ellipse(5,6,15,12,0,0,Math.PI*2); ctx.fill();
+  // tail feathers (behind body)
+  ctx.save(); ctx.rotate(-0.25);
+  ctx.fillStyle=wing; ctx.beginPath(); ctx.ellipse(-17,2,13,5,-0.3,0,Math.PI*2); ctx.fill();
   ctx.restore();
-
-  ctx.fillStyle = wing;  ctx.beginPath();
-  ctx.ellipse(-4, flapTimer>4?-6:6, 9, 6, flapTimer>4?-0.6:0.4, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = '#fff6d0'; ctx.beginPath(); ctx.ellipse(-2,7,8,6,0,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(8,-5,7,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(10,-5,3.4,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(11,-6,1.2,0,Math.PI*2); ctx.fill();
-  const beakGrad = ctx.createLinearGradient(15,-1,26,4);
-  beakGrad.addColorStop(0, lightenColor(sk.beak, 0.3));
-  beakGrad.addColorStop(1, sk.beak);
-  ctx.fillStyle = beakGrad; ctx.beginPath();
-  ctx.moveTo(15,-1); ctx.lineTo(26,2); ctx.lineTo(15,6); ctx.closePath(); ctx.fill();
+  ctx.save(); ctx.rotate(0.2);
+  ctx.fillStyle=lightenColor(wing,0.18); ctx.beginPath(); ctx.ellipse(-17,5,11,4,0.4,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  // body — round circle with bright radial gradient
+  const bodyGrad = ctx.createRadialGradient(-7,-7,2, 0,0,22);
+  bodyGrad.addColorStop(0, lightenColor(body,0.55));
+  bodyGrad.addColorStop(0.5, body);
+  bodyGrad.addColorStop(1, shade);
+  ctx.fillStyle=bodyGrad; ctx.beginPath(); ctx.arc(0,0,20,0,Math.PI*2); ctx.fill();
+  // rim shadow
+  ctx.save(); ctx.beginPath(); ctx.arc(0,0,20,0,Math.PI*2); ctx.clip();
+  ctx.fillStyle='rgba(0,0,0,.13)'; ctx.beginPath(); ctx.ellipse(6,7,16,13,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  // tummy (lighter patch, colour-matched to skin)
+  ctx.fillStyle=lightenColor(body,0.34); ctx.beginPath(); ctx.ellipse(5,8,10,8,0.1,0,Math.PI*2); ctx.fill();
+  // wing
+  ctx.fillStyle=wing; ctx.beginPath();
+  ctx.ellipse(-3, flapTimer>4?-9:7, 11,7, flapTimer>4?-0.65:0.4, 0,Math.PI*2); ctx.fill();
+  // eye white
+  ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(8,-6,8,0,Math.PI*2); ctx.fill();
+  // pupil
+  ctx.fillStyle='#1a1a2e'; ctx.beginPath(); ctx.arc(9,-5,4.8,0,Math.PI*2); ctx.fill();
+  // shine
+  ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(10.5,-6.5,1.8,0,Math.PI*2); ctx.fill();
+  // eyebrow (forward-tilted for determined look)
+  ctx.strokeStyle=shade; ctx.lineWidth=2.2; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(2,-14); ctx.quadraticCurveTo(9,-18,17,-13); ctx.stroke();
+  // cheek blush
+  ctx.fillStyle='rgba(255,130,130,.26)'; ctx.beginPath(); ctx.ellipse(12,2,6,4,0,0,Math.PI*2); ctx.fill();
+  // upper beak
+  const beakGrad=ctx.createLinearGradient(12,-4,27,6);
+  beakGrad.addColorStop(0,lightenColor(beak,0.42)); beakGrad.addColorStop(1,beak);
+  ctx.fillStyle=beakGrad; ctx.beginPath(); ctx.moveTo(12,-4); ctx.lineTo(27,0); ctx.lineTo(12,4); ctx.closePath(); ctx.fill();
+  // lower jaw
+  ctx.globalAlpha=0.72; ctx.fillStyle=beak;
+  ctx.beginPath(); ctx.moveTo(12,2); ctx.lineTo(24,5); ctx.lineTo(12,7); ctx.closePath(); ctx.fill();
+  ctx.globalAlpha=1;
 }
 function lightenColor(c, amt){
   if (c.startsWith('hsl')) return c; // skip animated hsl() colors, already dynamic
@@ -708,6 +725,29 @@ function mix(c1,c2,t){ return rgbStr(mixArr(c1,c2,t)); }
 
 let sceneBlend = { low: SCENES[0], high: SCENES[0], blend: 0 };
 
+function drawClouds(){
+  // skip outer-space scene (no atmosphere)
+  const _si=Math.max(0,Math.min(SCENES.length-1,Math.round(sceneT)));
+  if(SCENES[_si].id==='space') return;
+  const t=dayPhase, baseA=0.82-t*0.62;
+  if(baseA<0.05) return;
+  const cr=Math.round(255-t*50), cg=Math.round(252-t*62), cb=Math.round(255-t*28);
+  ctx.fillStyle=`rgb(${cr},${cg},${cb})`;
+  const cl=[{bx:20,y:58,sp:0.22,s:1.0},{bx:195,y:82,sp:0.15,s:0.72},{bx:325,y:42,sp:0.28,s:0.88},{bx:82,y:116,sp:0.10,s:0.55},{bx:465,y:68,sp:0.19,s:0.93}];
+  for(const c of cl){
+    const x=((c.bx-frame*c.sp)%(W+170)+W+170)%(W+170)-85, y=c.y, s=c.s;
+    ctx.globalAlpha=baseA*(0.58+s*0.40);
+    ctx.beginPath();
+    ctx.arc(x,       y,       30*s,0,Math.PI*2);
+    ctx.arc(x+28*s,  y-10*s,  23*s,0,Math.PI*2);
+    ctx.arc(x+52*s,  y-1*s,   27*s,0,Math.PI*2);
+    ctx.arc(x+22*s,  y+9*s,   18*s,0,Math.PI*2);
+    ctx.arc(x+42*s,  y+7*s,   15*s,0,Math.PI*2);
+    ctx.fill();
+  }
+  ctx.globalAlpha=1;
+}
+
 function drawBackground() {
   const t = dayPhase;
   const lowIdx = Math.max(0, Math.floor(sceneT));
@@ -724,7 +764,10 @@ function drawBackground() {
   g.addColorStop(1, rgbStr(bot));
   ctx.fillStyle = g; ctx.fillRect(0,0,W,PLAYFIELD);
 
-  // (sun/moon removed — the sky still shifts through morning/day/dusk/night)
+  // twinkling stars at night (dayPhase 0=day 1=night)
+  if(dayPhase>0.42){ const sa=(dayPhase-0.42)/0.58; ctx.fillStyle='#fff'; for(let i=0;i<30;i++){ const sx=hash(i*3)*W, sy=hash(i*3+1)*PLAYFIELD*0.76, sr=hash(i*3+2)*1.4+0.4, tw=0.5+0.5*Math.sin(frame*0.05+i*2.1); ctx.globalAlpha=sa*tw*0.88; ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2); ctx.fill(); } ctx.globalAlpha=1; }
+  // rolling clouds (parallax, 5 groups)
+  drawClouds();
 
   // scene-specific decor, cross-faded between the outgoing and incoming scene
   drawSceneDecor(low,  t, 1 - blend);
@@ -1465,11 +1508,19 @@ function rr(x,y,w,h,r){
 
 function drawCoin(c){
   ctx.save(); ctx.translate(c.x,c.y);
-  const sx = Math.abs(Math.sin(frame*0.08)); // spin
-  ctx.scale(sx*0.8+0.2, 1);
-  ctx.fillStyle='#ffd23f'; ctx.beginPath(); ctx.arc(0,0,c.r,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#ffe98a'; ctx.beginPath(); ctx.arc(0,0,c.r*0.6,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle='#e0a800'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,0,c.r,0,Math.PI*2); ctx.stroke();
+  const sx=Math.abs(Math.sin(frame*0.08));
+  ctx.scale(sx*0.8+0.2,1);
+  // radial gradient: bright centre → dark gold rim
+  const cg=ctx.createRadialGradient(-c.r*0.28,-c.r*0.28,0,0,0,c.r);
+  cg.addColorStop(0,'#fff5a0'); cg.addColorStop(0.5,'#ffd23f'); cg.addColorStop(1,'#c98f00');
+  ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(0,0,c.r,0,Math.PI*2); ctx.fill();
+  // top-left highlight blob
+  ctx.fillStyle='rgba(255,255,210,.52)'; ctx.beginPath(); ctx.arc(-c.r*0.22,-c.r*0.22,c.r*0.34,0,Math.PI*2); ctx.fill();
+  // rim
+  ctx.strokeStyle='#c98f00'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(0,0,c.r,0,Math.PI*2); ctx.stroke();
+  // rotating sparkle dot
+  const sa=frame*0.14, sr=c.r*0.76;
+  ctx.fillStyle='rgba(255,255,220,.95)'; ctx.beginPath(); ctx.arc(Math.cos(sa)*sr,Math.sin(sa)*sr,2,0,Math.PI*2); ctx.fill();
   ctx.restore();
 }
 
