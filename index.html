@@ -280,6 +280,7 @@ let hazards = [];    // {x, y, r, bob, bobAmp, bobSpeed, scored, seed} -- level 
 let coins = [];      // {x, y, r, taken}
 let powerups = [];   // {x, y, r, type, taken, bob}
 let particles = [];  // {x,y,vx,vy,life,max,color,size}
+let midX=0, farX=0;  // mid- and far-ground parallax offsets
 let shake=0, flashAlpha=0, scoreAnim=0;   // screen shake, death flash, score pop
 let nearMissTimer=0, nearMissY=0;          // near-miss toast
 let combo=0, comboTimer=0;                 // consecutive-pass combo
@@ -291,6 +292,14 @@ let scrollX = 0;     // for ground texture
 let dayPhase = 0;    // 0..1 day/night
 
 /* ----------------------------- Scenes (auto-changing backgrounds) -------- */
+// ── Sprite System ── paste AI-generated PNG as base64 to replace coded bird ──
+// Sprite sheet: 4 frames side-by-side  idle | wings-up | wings-down | hit
+// Recommended source size: 320×80 px  (4 × 80 px frames, transparent bg)
+const BIRD_SPRITE_B64 = '';          // ← paste your base64 PNG string here
+const BIRD_FW=80, BIRD_FH=80;
+let _birdSp=null;
+if(BIRD_SPRITE_B64){ _birdSp=new Image(); _birdSp.src='data:image/png;base64,'+BIRD_SPRITE_B64; }
+
 const SCENES = [
   { id:'meadow',  name:'Meadow',   icon:'🌳', threshold:0,
     day:[[94,197,255],[201,240,255]],  night:[[40,30,80],[90,70,140]],
@@ -539,6 +548,7 @@ function reset() {
   bird.y = H*0.45; bird.vy = 0; bird.rot = 0;
   score = 0; coinCount = 0; frame = 0; sincePipe = 0; pipesSpawned = 0;
   shake=0; flashAlpha=0; scoreAnim=0; nearMissTimer=0; combo=0; comboTimer=0;
+  midX=0; farX=0;
   nextSpacing = nextObstacleSpacing();
   const idx = (playMode === 'levels') ? levelSceneIndex(level) : endlessSceneIndex();
   sceneT = idx; sceneToastIdx = idx; sceneToastTimer = 110;
@@ -605,6 +615,8 @@ function update() {
     // spawn obstacles by DISTANCE travelled (not frame count) so horizontal
     // spacing stays constant even while slow-mo reduces the scroll speed
     sincePipe += sp;
+    midX += sp*0.32;
+    farX += sp*0.10;
     if (sincePipe >= nextSpacing) {
       sincePipe = 0;
       (playMode==='levels') ? spawnHazard() : spawnPipe();
@@ -725,6 +737,147 @@ function mix(c1,c2,t){ return rgbStr(mixArr(c1,c2,t)); }
 
 let sceneBlend = { low: SCENES[0], high: SCENES[0], blend: 0 };
 
+// ─── Mid-ground parallax — one layer per scene at 0.32× scroll speed ────────
+function drawMidground(){
+  const {low,high,blend}=sceneBlend;
+  _drawMid(low, 1-blend); if(high.id!==low.id) _drawMid(high, blend);
+}
+function _drawMid(sc, alpha){
+  if(alpha<0.02) return;
+  ctx.save(); ctx.globalAlpha=alpha;
+  if(sc.id==='city')    _midCity();
+  else if(sc.id==='meadow')   _midMeadow();
+  else if(sc.id==='volcano')  _midVolcano();
+  else if(sc.id==='space')    _midSpace();
+  else if(sc.id==='ocean')    _midOcean();
+  else if(sc.id==='arctic')   _midArctic();
+  else if(sc.id==='desert')   _midDesert();
+  ctx.restore();
+}
+
+function _midCity(){
+  const rW=340, ox=-(midX%rW), base=PLAYFIELD, t=dayPhase;
+  const bldA=t>0.45?0.88:0.58;
+  const bs=[{x:.04,w:.11,h:.40},{x:.16,w:.07,h:.26},{x:.24,w:.14,h:.52},{x:.39,w:.09,h:.30},
+            {x:.50,w:.17,h:.46},{x:.68,w:.08,h:.21},{x:.78,w:.12,h:.37},{x:.91,w:.07,h:.30}];
+  for(let i=-1;i<=Math.ceil(W/rW)+1;i++){
+    const bx=ox+i*rW;
+    ctx.fillStyle=`rgba(22,22,44,${bldA})`;
+    for(const b of bs){
+      const bh=b.h*PLAYFIELD*0.58;
+      ctx.fillRect(bx+b.x*rW, base-bh, b.w*rW-2, bh);
+    }
+    // lit windows
+    ctx.fillStyle=`rgba(255,240,130,${0.45+t*0.45})`;
+    for(const b of bs){
+      const bh=b.h*PLAYFIELD*0.58, bxL=bx+b.x*rW, bw=b.w*rW-2;
+      const cols=Math.max(1,Math.floor(bw/10)), rows=Math.max(1,Math.floor(bh*0.55/12));
+      for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+        if(hash(i*200+b.x*100+r*10+c)>0.44)
+          ctx.fillRect(bxL+3+c*10, base-bh+7+r*12, 5,7);
+      }
+    }
+  }
+}
+
+function _midMeadow(){
+  const rW=320, ox=-(midX%rW), y0=PLAYFIELD*0.72;
+  ctx.fillStyle='rgba(68,148,50,0.42)';
+  for(let i=-1;i<=Math.ceil(W/rW)+1;i++){
+    const bx=ox+i*rW;
+    ctx.beginPath(); ctx.moveTo(bx,PLAYFIELD);
+    ctx.bezierCurveTo(bx+rW*.15,y0-28, bx+rW*.28,y0+6, bx+rW*.42,y0-12);
+    ctx.bezierCurveTo(bx+rW*.56,y0-24, bx+rW*.70,y0+8,  bx+rW*.85,y0-14);
+    ctx.bezierCurveTo(bx+rW*.93,y0-4,  bx+rW,y0,         bx+rW,PLAYFIELD);
+    ctx.fill();
+    const tr=(tx,th)=>{ ctx.fillRect(tx-3,y0-th*.42,5,th*.42); ctx.beginPath(); ctx.arc(tx,y0-th*.47,14,0,Math.PI*2); ctx.fill(); };
+    tr(bx+rW*.12,72); tr(bx+rW*.62,58);
+  }
+}
+
+function _midVolcano(){
+  const rW=400, ox=-(midX*0.55%rW), base=PLAYFIELD, t=dayPhase;
+  const gg=ctx.createLinearGradient(0,base-65,0,base);
+  gg.addColorStop(0,'rgba(255,80,0,0)'); gg.addColorStop(1,`rgba(255,55,0,${0.28+t*.10})`);
+  ctx.fillStyle=gg; ctx.fillRect(0,base-65,W,65);
+  ctx.fillStyle='rgba(36,16,12,0.75)';
+  for(let i=-1;i<=Math.ceil(W/rW)+1;i++){
+    const bx=ox+i*rW;
+    ctx.beginPath(); ctx.moveTo(bx,base);
+    ctx.lineTo(bx+rW*.16,base-100); ctx.lineTo(bx+rW*.28,base-122);
+    ctx.lineTo(bx+rW*.36,base-98);  ctx.lineTo(bx+rW*.50,base-145);
+    ctx.lineTo(bx+rW*.57,base-112); ctx.lineTo(bx+rW*.70,base-82);
+    ctx.lineTo(bx+rW,base); ctx.fill();
+  }
+}
+
+function _midSpace(){
+  const rW=380, ox=-(midX%rW);
+  const nc=['rgba(120,60,200,.18)','rgba(40,120,200,.18)','rgba(200,60,100,.14)'];
+  const nb=[{x:.10,y:.22,rx:80,ry:52,c:0},{x:.42,y:.36,rx:100,ry:58,c:1},{x:.74,y:.14,rx:70,ry:44,c:2}];
+  for(let i=-1;i<=Math.ceil(W/rW)+1;i++){
+    const bx=ox+i*rW;
+    for(const n of nb){
+      ctx.fillStyle=nc[n.c]; ctx.beginPath();
+      ctx.ellipse(bx+n.x*rW, n.y*PLAYFIELD, n.rx,n.ry,0,0,Math.PI*2); ctx.fill();
+    }
+    for(let s=0;s<5;s++){
+      const sx=bx+hash((i*7+s)*17)*rW, sy=hash((i*7+s)*31+7)*PLAYFIELD*.78;
+      ctx.fillStyle=`rgba(255,255,255,${hash((i*7+s)*41+1)*.38+.14})`;
+      ctx.beginPath(); ctx.arc(sx,sy,hash((i*7+s)*53+3)*2.5+.8,0,Math.PI*2); ctx.fill();
+    }
+  }
+}
+
+function _midOcean(){
+  const t=dayPhase;
+  ctx.strokeStyle=`rgba(32,150,196,${0.28+t*.08})`; ctx.lineWidth=2.5; ctx.lineCap='round';
+  for(let wv=0;wv<3;wv++){
+    const wy=PLAYFIELD*(.72+wv*.055);
+    ctx.beginPath(); let first=true;
+    for(let x=-4;x<W+4;x+=3){
+      const y=wy+Math.sin((x+midX+wv*70)*.028)*9;
+      if(first){ctx.moveTo(x,y);first=false;}else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+}
+
+function _midArctic(){
+  const rW=310, ox=-(midX%rW);
+  ctx.fillStyle='rgba(185,222,242,0.52)';
+  for(let i=-1;i<=Math.ceil(W/rW)+1;i++){
+    const bx=ox+i*rW;
+    ctx.beginPath(); ctx.moveTo(bx,PLAYFIELD);
+    ctx.lineTo(bx+rW*.10,PLAYFIELD-88); ctx.lineTo(bx+rW*.20,PLAYFIELD-52);
+    ctx.lineTo(bx+rW*.32,PLAYFIELD-112);ctx.lineTo(bx+rW*.44,PLAYFIELD-72);
+    ctx.lineTo(bx+rW*.58,PLAYFIELD-98); ctx.lineTo(bx+rW*.66,PLAYFIELD-56);
+    ctx.lineTo(bx+rW*.78,PLAYFIELD-82); ctx.lineTo(bx+rW*.90,PLAYFIELD-42);
+    ctx.lineTo(bx+rW,PLAYFIELD); ctx.fill();
+    // ice sheen on peaks
+    ctx.fillStyle='rgba(255,255,255,0.55)';
+    const pk=(px,ph)=>{ctx.beginPath();ctx.moveTo(px-8,PLAYFIELD-ph+14);ctx.lineTo(px,PLAYFIELD-ph);ctx.lineTo(px+8,PLAYFIELD-ph+14);ctx.fill();};
+    pk(bx+rW*.32,112); pk(bx+rW*.58,98);
+    ctx.fillStyle='rgba(185,222,242,0.52)';
+  }
+}
+
+function _midDesert(){
+  const rW=360, ox=-(midX%rW);
+  ctx.fillStyle='rgba(184,122,46,0.46)';
+  for(let i=-1;i<=Math.ceil(W/rW)+1;i++){
+    const bx=ox+i*rW;
+    // mesa
+    ctx.beginPath(); ctx.moveTo(bx+rW*.08,PLAYFIELD);
+    ctx.lineTo(bx+rW*.08,PLAYFIELD-68); ctx.lineTo(bx+rW*.12,PLAYFIELD-76);
+    ctx.lineTo(bx+rW*.36,PLAYFIELD-76); ctx.lineTo(bx+rW*.40,PLAYFIELD-68);
+    ctx.lineTo(bx+rW*.40,PLAYFIELD); ctx.fill();
+    // dune
+    ctx.beginPath(); ctx.moveTo(bx+rW*.52,PLAYFIELD);
+    ctx.quadraticCurveTo(bx+rW*.72,PLAYFIELD-50, bx+rW*.93,PLAYFIELD); ctx.fill();
+  }
+}
+
 function drawClouds(){
   // skip outer-space scene (no atmosphere)
   const _si=Math.max(0,Math.min(SCENES.length-1,Math.round(sceneT)));
@@ -768,6 +921,8 @@ function drawBackground() {
   if(dayPhase>0.42){ const sa=(dayPhase-0.42)/0.58; ctx.fillStyle='#fff'; for(let i=0;i<30;i++){ const sx=hash(i*3)*W, sy=hash(i*3+1)*PLAYFIELD*0.76, sr=hash(i*3+2)*1.4+0.4, tw=0.5+0.5*Math.sin(frame*0.05+i*2.1); ctx.globalAlpha=sa*tw*0.88; ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2); ctx.fill(); } ctx.globalAlpha=1; }
   // rolling clouds (parallax, 5 groups)
   drawClouds();
+  // mid-ground silhouettes at 0.32× scroll (depth layer)
+  drawMidground();
 
   // scene-specific decor, cross-faded between the outgoing and incoming scene
   drawSceneDecor(low,  t, 1 - blend);
@@ -1554,7 +1709,13 @@ function drawBird(){
   const _ff=bird.flapTimer>0?bird.flapTimer/8:0;
   const _rf=bird.flapTimer===0?Math.max(0,Math.min(1,(bird.vy-1.5)/7)):0;
   ctx.scale(1+_ff*0.28-_rf*0.12, 1-_ff*0.30+_rf*0.22);
-  drawBirdSkin(currentSkin(), bird.flapTimer);
+  if(_birdSp && _birdSp.complete && _birdSp.naturalWidth>0){
+    const fr=bird.flapTimer>4?1:bird.vy>1.5?2:0;
+    const dw=BIRD_FW*0.6, dh=BIRD_FH*0.6;
+    ctx.drawImage(_birdSp, fr*BIRD_FW,0,BIRD_FW,BIRD_FH, -dw/2,-dh/2,dw,dh);
+  } else {
+    drawBirdSkin(currentSkin(), bird.flapTimer);
+  }
   ctx.restore();
 }
 
