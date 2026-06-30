@@ -263,6 +263,10 @@ let hazards = [];    // {x, y, r, bob, bobAmp, bobSpeed, scored, seed} -- level 
 let coins = [];      // {x, y, r, taken}
 let powerups = [];   // {x, y, r, type, taken, bob}
 let particles = [];  // {x,y,vx,vy,life,max,color,size}
+let shake=0, flashAlpha=0, scoreAnim=0;   // screen shake, death flash, score pop
+let nearMissTimer=0, nearMissY=0;          // near-miss toast
+let combo=0, comboTimer=0;                 // consecutive-pass combo
+const NEAR_DIST=32;                        // px clearance counts as near-miss
 
 let score = 0, coinCount = 0;
 let frame = 0;
@@ -517,6 +521,7 @@ function reset() {
   active = {};
   bird.y = H*0.45; bird.vy = 0; bird.rot = 0;
   score = 0; coinCount = 0; frame = 0; sincePipe = 0; pipesSpawned = 0;
+  shake=0; flashAlpha=0; scoreAnim=0; nearMissTimer=0; combo=0; comboTimer=0;
   nextSpacing = nextObstacleSpacing();
   const idx = (playMode === 'levels') ? levelSceneIndex(level) : endlessSceneIndex();
   sceneT = idx; sceneToastIdx = idx; sceneToastTimer = 110;
@@ -527,6 +532,7 @@ function gameOver() {
   overFrame = frame;
   Sound.hit(); setTimeout(()=>Sound.die(), 120);
   burst(bird.x, bird.y, '#ffb03a', 22, 5);
+  shake=14; flashAlpha=0.75;
   if (playMode === 'levels') {
     newRecord = false;
   } else {
@@ -597,6 +603,8 @@ function update() {
           h.scored = true;
           score += powerActive('x2') ? 2 : 1;
           Sound.score();
+          scoreAnim=12; combo++; comboTimer=90;
+          burst(bird.x, bird.y, 'rgba(255,255,180,.7)', 5, 2.5);
         }
       }
       hazards = hazards.filter(h => h.x + h.r > -40);
@@ -616,6 +624,10 @@ function update() {
           p.scored = true;
           score += powerActive('x2') ? 2 : 1;
           Sound.score();
+          scoreAnim=12; combo++; comboTimer=90;
+          burst(bird.x, bird.y, 'rgba(255,255,180,.7)', 6, 2.5);
+          const _dt=bird.y-bird.r-p.top, _db=(p.top+p.gap)-(bird.y+bird.r);
+          if(Math.min(_dt,_db)<NEAR_DIST){ nearMissTimer=80; nearMissY=bird.y; wallet++; coinCount++; saveWallet(); burst(bird.x,bird.y,'#ffd23f',10,4); }
         }
       }
       pipes = pipes.filter(p => p.x + p.w > -10);
@@ -680,6 +692,12 @@ function update() {
     pt.x += pt.vx; pt.y += pt.vy; pt.vy += 0.12; pt.life--;
   }
   particles = particles.filter(pt => pt.life > 0);
+  // juice ticks (continue during game-over animation)
+  if(scoreAnim>0) scoreAnim--;
+  if(comboTimer>0){ comboTimer--; if(comboTimer===0) combo=0; }
+  if(nearMissTimer>0) nearMissTimer--;
+  if(shake>0.4) shake*=0.8; else shake=0;
+  if(flashAlpha>0.01) flashAlpha*=0.85; else flashAlpha=0;
 }
 
 /* ----------------------------- Drawing ----------------------------------- */
@@ -1481,6 +1499,10 @@ function drawBird(){
     ctx.beginPath(); ctx.arc(0,0,bird.r+9,0,Math.PI*2); ctx.stroke();
   }
 
+  // squash on flap, stretch on fall
+  const _ff=bird.flapTimer>0?bird.flapTimer/8:0;
+  const _rf=bird.flapTimer===0?Math.max(0,Math.min(1,(bird.vy-1.5)/7)):0;
+  ctx.scale(1+_ff*0.28-_rf*0.12, 1-_ff*0.30+_rf*0.22);
   drawBirdSkin(currentSkin(), bird.flapTimer);
   ctx.restore();
 }
@@ -1537,12 +1559,19 @@ function coinLabel(text, cx, cy, fontPx, bold, color){
 }
 
 function drawHUD(){
-  // score
-  ctx.font = 'bold 52px Mali';
-  ctx.textAlign='center'; ctx.textBaseline='top';
+  // score with pop bounce
+  const _ss=1+(scoreAnim/12)*0.35;
+  ctx.save(); ctx.translate(W/2,39); ctx.scale(_ss,_ss);
+  ctx.font='bold 52px Mali'; ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.lineWidth=6; ctx.strokeStyle='rgba(0,0,0,.35)';
-  ctx.strokeText(score, W/2, 24);
-  ctx.fillStyle='#fff'; ctx.fillText(score, W/2, 24);
+  ctx.strokeText(score,0,0);
+  ctx.fillStyle=combo>=10?'#ff7b3a':combo>=5?'#ffd23f':'#fff';
+  ctx.fillText(score,0,0);
+  ctx.restore();
+  // combo badge
+  if(combo>=3&&comboTimer>0){ const _ca=Math.min(1,comboTimer/25); ctx.globalAlpha=_ca; ctx.fillStyle=combo>=10?'#ff4444':combo>=5?'#ff9f1c':'#7ad24f'; ctx.font='bold 14px Mali'; ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillText('x'+combo+' COMBO!',W/2,74); ctx.globalAlpha=1; }
+  // near-miss toast (floats up from where bird was)
+  if(nearMissTimer>0){ const _na=Math.min(1,nearMissTimer/30); const _ny=nearMissY-(80-nearMissTimer)*0.55; ctx.globalAlpha=_na; ctx.font='bold 18px Mali'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineWidth=4; ctx.strokeStyle='rgba(0,0,0,.4)'; ctx.strokeText('NEAR MISS! +1',W/2,_ny); ctx.fillStyle='#ffd23f'; ctx.fillText('NEAR MISS! +1',W/2,_ny); ctx.globalAlpha=1; }
 
   // coins
   ctx.font='bold 20px Mali'; ctx.textAlign='left';
@@ -2035,6 +2064,8 @@ function drawPauseOverlay(){
 /* ----------------------------- Main loop --------------------------------- */
 function render(){
   uiButtons = [];
+  ctx.save();
+  if(shake>0.5) ctx.translate((Math.random()-0.5)*shake,(Math.random()-0.5)*shake*0.6);
   drawBackground();
   if (playMode === 'levels') { for (const h of hazards) drawHazard(h); }
   else                       { for (const p of pipes) drawPipe(p); }
@@ -2053,6 +2084,8 @@ function render(){
   if (state === STATE.WIN)        drawWin();
   if (state === STATE.LEVELCLEAR) drawLevelClear();
   if (state === STATE.PAUSE)      drawPauseOverlay();
+  if(flashAlpha>0.01){ ctx.globalAlpha=flashAlpha; ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H); ctx.globalAlpha=1; }
+  ctx.restore();
 }
 
 function loop(){
