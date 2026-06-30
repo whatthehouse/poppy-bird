@@ -56,7 +56,7 @@
 <div id="wrap">
   <canvas id="game" width="400" height="700"></canvas>
 </div>
-<div id="hint">แตะ / คลิก / กด Space เพื่อบิน &nbsp;/&nbsp; P = พัก &nbsp;/&nbsp; M = ปิดเสียง</div>
+<div id="hint">Tap / Click / Space to fly &nbsp;|&nbsp; P = Pause &nbsp;|&nbsp; M = Mute</div>
 <script>
 "use strict";
 /* =========================================================================
@@ -155,19 +155,19 @@ let best = parseInt(localStorage.getItem(STORE) || '0', 10) || 0;
 
 /* ----------------------------- Wallet + Skins (persistent) --------------- */
 const SKINS = [
-  { id:'classic', name:'พ็อปปี้',    price:0,   body:'#ffd23f', shade:'#ffb800', wing:'#ffe98a', beak:'#ff7b3a' },
-  { id:'robin',   name:'โรบิน',      price:15,  body:'#ff6b6b', shade:'#e84d4d', wing:'#ffb3b3', beak:'#ffb800' },
-  { id:'sky',     name:'บลูเบิร์ด',  price:25,  body:'#5ec5ff', shade:'#3aa0e0', wing:'#bfe8ff', beak:'#ff9f1c' },
-  { id:'mint',    name:'มินต์',      price:40,  body:'#46e0c8', shade:'#27b8a0', wing:'#b3f5ea', beak:'#ff7b3a' },
-  { id:'grape',   name:'เกรป',       price:60,  body:'#9b7bff', shade:'#7b56e0', wing:'#d4c6ff', beak:'#ffd23f' },
-  { id:'panda',   name:'แพนด้า',     price:90,  body:'#ffffff', shade:'#dfe4ea', wing:'#2f3542', beak:'#ff9f1c' },
-  { id:'phoenix', name:'ฟีนิกซ์',    price:130, body:'#ff7b3a', shade:'#ff4d00', wing:'#ffd23f', beak:'#ffe98a' },
-  { id:'shadow',  name:'แชโดว์',     price:200, body:'#3d3d5c', shade:'#26263d', wing:'#6c6c9c', beak:'#ffd23f' },
+  { id:'classic', name:'Poppy',    price:0,   body:'#ffd23f', shade:'#ffb800', wing:'#ffe98a', beak:'#ff7b3a' },
+  { id:'robin',   name:'Robin',      price:15,  body:'#ff6b6b', shade:'#e84d4d', wing:'#ffb3b3', beak:'#ffb800' },
+  { id:'sky',     name:'Bluebird',  price:25,  body:'#5ec5ff', shade:'#3aa0e0', wing:'#bfe8ff', beak:'#ff9f1c' },
+  { id:'mint',    name:'Mint',      price:40,  body:'#46e0c8', shade:'#27b8a0', wing:'#b3f5ea', beak:'#ff7b3a' },
+  { id:'grape',   name:'Grape',       price:60,  body:'#9b7bff', shade:'#7b56e0', wing:'#d4c6ff', beak:'#ffd23f' },
+  { id:'panda',   name:'Panda',     price:90,  body:'#ffffff', shade:'#dfe4ea', wing:'#2f3542', beak:'#ff9f1c' },
+  { id:'phoenix', name:'Phoenix',    price:130, body:'#ff7b3a', shade:'#ff4d00', wing:'#ffd23f', beak:'#ffe98a' },
+  { id:'shadow',  name:'Shadow',     price:200, body:'#3d3d5c', shade:'#26263d', wing:'#6c6c9c', beak:'#ffd23f' },
   // ⭐ Special skins — leave a glowing trail while flying
-  { id:'flame',   name:'เปลวไฟ',     price:300, body:'#ff5a3c', shade:'#d62800', wing:'#ffd23f', beak:'#fff1c0', fx:'fire'    },
-  { id:'rainbow', name:'เรนโบว์',    price:450, body:'#ff6b6b', shade:'#ff9f1c', wing:'#ffffff', beak:'#ff7b3a', fx:'rainbow' },
-  { id:'frost',   name:'ฟรอสต์',     price:600, body:'#cfeeff', shade:'#7fc8ff', wing:'#ffffff', beak:'#5ec5ff', fx:'ice'     },
-  { id:'galaxy',  name:'กาแล็กซี่',  price:800, body:'#3a2a6a', shade:'#1f1442', wing:'#c4b3ff', beak:'#ffd23f', fx:'star'    }
+  { id:'flame',   name:'Flame',     price:300, body:'#ff5a3c', shade:'#d62800', wing:'#ffd23f', beak:'#fff1c0', fx:'fire'    },
+  { id:'rainbow', name:'Rainbow',    price:450, body:'#ff6b6b', shade:'#ff9f1c', wing:'#ffffff', beak:'#ff7b3a', fx:'rainbow' },
+  { id:'frost',   name:'Frost',     price:600, body:'#cfeeff', shade:'#7fc8ff', wing:'#ffffff', beak:'#5ec5ff', fx:'ice'     },
+  { id:'galaxy',  name:'Galaxy',  price:800, body:'#3a2a6a', shade:'#1f1442', wing:'#c4b3ff', beak:'#ffd23f', fx:'star'    }
 ];
 let wallet       = parseInt(localStorage.getItem('poppybird_wallet') || '0', 10) || 0;
 let owned_ids    = JSON.parse(localStorage.getItem('poppybird_owned') || 'null') || ['classic'];
@@ -271,25 +271,25 @@ let dayPhase = 0;    // 0..1 day/night
 
 /* ----------------------------- Scenes (auto-changing backgrounds) -------- */
 const SCENES = [
-  { id:'meadow',  name:'ทุ่งหญ้า',   icon:'🌳', threshold:0,
+  { id:'meadow',  name:'Meadow',   icon:'🌳', threshold:0,
     day:[[94,197,255],[201,240,255]],  night:[[40,30,80],[90,70,140]],
     groundTop:[218,185,116], groundPath:[194,160,92], edge:[122,210,79],  edge2:[108,192,67] },
-  { id:'ocean',   name:'ทะเล',       icon:'🌊', threshold:12,
+  { id:'ocean',   name:'Ocean',       icon:'🌊', threshold:12,
     day:[[64,180,210],[176,235,232]],  night:[[8,38,68],[36,86,118]],
     groundTop:[224,206,158], groundPath:[196,176,128],edge:[64,196,176],  edge2:[46,164,148] },
-  { id:'desert',  name:'ทะเลทราย',   icon:'🏜️', threshold:25,
+  { id:'desert',  name:'Desert',   icon:'🏜️', threshold:25,
     day:[[255,189,107],[255,224,164]], night:[[70,35,55],[130,70,95]],
     groundTop:[224,176,96],  groundPath:[206,150,84], edge:[196,140,76],  edge2:[176,118,62] },
-  { id:'volcano', name:'ภูเขาไฟ',    icon:'🌋', threshold:40,
+  { id:'volcano', name:'Volcano',    icon:'🌋', threshold:40,
     day:[[82,42,40],[206,94,56]],      night:[[20,8,10],[82,26,20]],
     groundTop:[46,34,32],    groundPath:[28,20,20],   edge:[255,112,42],  edge2:[200,72,32] },
-  { id:'arctic',  name:'ขั้วโลก',    icon:'❄️', threshold:58,
+  { id:'arctic',  name:'Arctic',    icon:'❄️', threshold:58,
     day:[[150,210,235],[226,246,250]], night:[[20,30,62],[56,56,102]],
     groundTop:[236,246,250], groundPath:[202,222,236],edge:[222,236,246], edge2:[182,206,226] },
-  { id:'city',    name:'เมือง',       icon:'🌃', threshold:78,
+  { id:'city',    name:'City',       icon:'🌃', threshold:78,
     day:[[150,178,214],[214,226,236]], night:[[18,18,42],[52,48,86]],
     groundTop:[120,120,128], groundPath:[90,90,98],   edge:[150,150,158], edge2:[70,70,78] },
-  { id:'space',   name:'อวกาศ',       icon:'🌌', threshold:100,
+  { id:'space',   name:'Space',       icon:'🌌', threshold:100,
     day:[[30,18,66],[78,46,120]],      night:[[6,6,22],[26,18,54]],
     groundTop:[60,52,86],    groundPath:[40,34,64],   edge:[120,100,170], edge2:[50,42,78] }
 ];
@@ -321,10 +321,10 @@ function diff() {
 
 /* Power-up definitions */
 const POWERS = {
-  shield: { color:'#46e0c8', glyph:'🛡️', dur:360, label:'โล่กันชน' },
-  slow:   { color:'#9b7bff', glyph:'🐌', dur:360, label:'สโลว์โมชัน' },
-  magnet: { color:'#ff7bd0', glyph:'🧲', dur:420, label:'แม่เหล็กดูดเหรียญ' },
-  x2:     { color:'#ffd23f', glyph:'✨', dur:420, label:'คะแนน x2' }
+  shield: { color:'#46e0c8', glyph:'🛡️', dur:360, label:'Shield' },
+  slow:   { color:'#9b7bff', glyph:'🐌', dur:360, label:'Slow-mo' },
+  magnet: { color:'#ff7bd0', glyph:'🧲', dur:420, label:'Magnet' },
+  x2:     { color:'#ffd23f', glyph:'✨', dur:420, label:'2x Score' }
 };
 const POWER_KEYS = Object.keys(POWERS);
 let active = {}; // type -> frames remaining
@@ -1465,8 +1465,7 @@ function drawPowerup(pu){
   ctx.shadowBlur = 0;
   ctx.fillStyle = def.color;
   ctx.beginPath(); ctx.arc(pu.x, y, pu.r-4, 0, Math.PI*2); ctx.fill();
-  ctx.font = '18px Mali, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText(def.glyph, pu.x, y+1);
+  drawPowerGlyph(pu.type, pu.x, y, (pu.r-4)*1.8, '#fff');
   ctx.restore();
 }
 
@@ -1559,21 +1558,19 @@ function drawHUD(){
     const w = 86, frac = active[k]/def.dur;
     ctx.fillStyle='rgba(0,0,0,.25)'; rr(12, py, w, 16, 8);
     ctx.fillStyle=def.color; rr(12, py, w*frac, 16, 8);
-    ctx.font='12px Mali, sans-serif'; ctx.fillStyle='#fff'; ctx.textBaseline='middle'; ctx.textAlign='left';
-    ctx.fillText(def.glyph+' '+def.label, 16, py+9);
+    const gs=13; drawPowerGlyph(k, 16+gs/2, py+9, gs, '#fff');
+    ctx.fillStyle='#fff'; ctx.font='12px Mali, sans-serif'; ctx.textBaseline='middle'; ctx.textAlign='left';
+    ctx.fillText(def.label, 16+gs+4, py+9);
     py += 22; idx++;
   }
 
-  if (Sound.muted){
-    ctx.font='16px Mali'; ctx.textAlign='right'; ctx.fillStyle='rgba(255,255,255,.8)';
-    ctx.fillText('🔇', W-14, 18);
-  }
+  if (Sound.muted){ drawIcon('mute', W-22, 18, 20, 'rgba(255,255,255,.8)'); }
 
   // level-clear mode: level badge + progress bar with checkpoint ticks + bird marker
   if (playMode === 'levels') {
     ctx.font='bold 18px Mali'; ctx.textAlign='right'; ctx.textBaseline='top';
     ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.3)';
-    const lvlText = 'ด่าน '+level;
+    const lvlText = 'Level '+level;
     ctx.strokeText(lvlText, W-14, 40);
     ctx.fillStyle='#fff'; ctx.fillText(lvlText, W-14, 40);
 
@@ -1597,10 +1594,15 @@ function drawHUD(){
     const sc = SCENES[sceneToastIdx];
     ctx.globalAlpha = Math.min(1, sceneToastTimer/30);
     ctx.textAlign='center'; ctx.textBaseline='middle';
+    const _tIS=24, _tGp=6;
     ctx.font='bold 22px Mali';
+    const _tTW=ctx.measureText(sc.name).width;
+    const _tSX=W/2-(_tIS+_tGp+_tTW)/2;
+    drawThemeIcon(sc.id, _tSX+_tIS/2, 110, _tIS);
     ctx.lineWidth=5; ctx.strokeStyle='rgba(0,0,0,.35)';
-    ctx.strokeText(sc.icon+' '+sc.name, W/2, 110);
-    ctx.fillStyle='#fff'; ctx.fillText(sc.icon+' '+sc.name, W/2, 110);
+    ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.strokeText(sc.name, _tSX+_tIS+_tGp, 110);
+    ctx.fillStyle='#fff'; ctx.fillText(sc.name, _tSX+_tIS+_tGp, 110);
     ctx.globalAlpha = 1;
   }
 }
@@ -1625,32 +1627,70 @@ function fitFont(text, maxWidth, baseSize, bold){
   while (ctx.measureText(text).width * 1.08 > maxWidth && size > 8) { size--; setFont(size, bold); }
   return size;
 }
-function button(x,y,w,h,label,bg,fg,action){
+function button(x,y,w,h,label,bg,fg,action,iconId){
   ctx.fillStyle=bg; rr(x,y,w,h,12);
   ctx.fillStyle=fg; ctx.textBaseline='middle';
-  // split a leading icon ("🛒  ร้านค้า" -> "🛒" + "ร้านค้า") and measure/draw it
-  // separately from the text — iOS Safari can paint emoji wider than it
-  // reports via measureText(), which previously corrupted the Thai-text fit
-  const m = label.match(/^(\S+)\s+(.*)$/);
-  if (m) {
-    const icon = m[1], text = m[2];
-    setFont(18, true);
-    const iconW = ctx.measureText(icon).width;
-    const gap = 8;
-    const textSize = fitFont(text, w - iconW - gap - 22, 18, true);
-    const textW = ctx.measureText(text).width;
-    const startX = x + w/2 - (iconW+gap+textW)/2;
-    ctx.textAlign='left';
-    setFont(18, true);
-    ctx.fillText(icon, startX, y+h/2+1);
-    setFont(textSize, true);
-    ctx.fillText(text, startX+iconW+gap, y+h/2+1);
+  if (iconId) {
+    const isz = Math.min(h*0.5, 22), gap = isz*0.45;
+    const ts = fitFont(label, w - isz - gap - 24, 18, true);
+    const tw = ctx.measureText(label).width;
+    const startX = x + w/2 - (isz+gap+tw)/2;
+    drawIcon(iconId, startX + isz/2, y+h/2, isz, fg);
+    ctx.textAlign='left'; setFont(ts, true);
+    ctx.fillText(label, startX + isz + gap, y+h/2+1);
   } else {
     ctx.textAlign='center';
     fitFont(label, w-30, 18, true);
     ctx.fillText(label, x+w/2, y+h/2+1);
   }
   uiButtons.push({x,y,w,h,action});
+}
+
+// pure vector UI icons — no font/emoji dependency, identical on every device
+function drawIcon(id, cx, cy, s, color){
+  color = color || '#fff';
+  ctx.save(); ctx.translate(cx,cy);
+  const r = s/2;
+  ctx.fillStyle=color; ctx.strokeStyle=color;
+  ctx.lineWidth=Math.max(2, s*0.12); ctx.lineCap='round'; ctx.lineJoin='round';
+  if (id==='play'){ ctx.beginPath(); ctx.moveTo(-r*0.5,-r*0.72); ctx.lineTo(r*0.78,0); ctx.lineTo(-r*0.5,r*0.72); ctx.closePath(); ctx.fill(); }
+  else if (id==='back'){ ctx.beginPath(); ctx.moveTo(r*0.45,-r*0.6); ctx.lineTo(-r*0.5,0); ctx.lineTo(r*0.45,r*0.6); ctx.stroke(); }
+  else if (id==='retry'){
+    ctx.beginPath(); ctx.arc(0,0,r*0.68,-0.5,Math.PI*1.45); ctx.stroke();
+    const a=-0.5, ax=Math.cos(a)*r*0.68, ay=Math.sin(a)*r*0.68;
+    ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(ax-r*0.34,ay-r*0.02); ctx.moveTo(ax,ay); ctx.lineTo(ax+r*0.02,ay-r*0.36); ctx.stroke();
+  }
+  else if (id==='menu'){ ctx.beginPath(); ctx.moveTo(-r*0.72,-r*0.02); ctx.lineTo(0,-r*0.72); ctx.lineTo(r*0.72,-r*0.02); ctx.stroke(); ctx.fillRect(-r*0.5,-r*0.02,r,r*0.62); }
+  else if (id==='shop'){
+    ctx.beginPath(); ctx.moveTo(-r*0.78,-r*0.55); ctx.lineTo(-r*0.45,-r*0.55); ctx.lineTo(-r*0.18,r*0.28); ctx.lineTo(r*0.6,r*0.28); ctx.lineTo(r*0.78,-r*0.28); ctx.lineTo(-r*0.28,-r*0.28); ctx.stroke();
+    ctx.beginPath(); ctx.arc(-r*0.05,r*0.58,r*0.13,0,Math.PI*2); ctx.arc(r*0.5,r*0.58,r*0.13,0,Math.PI*2); ctx.fill();
+  }
+  else if (id==='levels'){ ctx.beginPath(); ctx.moveTo(-r*0.5,-r*0.78); ctx.lineTo(-r*0.5,r*0.78); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-r*0.5,-r*0.78); ctx.lineTo(r*0.6,-r*0.45); ctx.lineTo(-r*0.5,-r*0.12); ctx.closePath(); ctx.fill(); }
+  else if (id==='endless'){ ctx.beginPath(); ctx.arc(-r*0.38,0,r*0.36,0,Math.PI*2); ctx.moveTo(r*0.74,0); ctx.arc(r*0.38,0,r*0.36,0,Math.PI*2); ctx.stroke(); }
+  else if (id==='target'){ ctx.beginPath(); ctx.arc(0,0,r*0.72,0,Math.PI*2); ctx.moveTo(r*0.36,0); ctx.arc(0,0,r*0.36,0,Math.PI*2); ctx.stroke(); ctx.beginPath(); ctx.arc(0,0,r*0.1,0,Math.PI*2); ctx.fill(); }
+  else if (id==='palette'){ ctx.beginPath(); ctx.arc(0,0,r*0.72,0,Math.PI*2); ctx.stroke(); for(let i=0;i<4;i++){const a=i*1.35-0.5; ctx.beginPath(); ctx.arc(Math.cos(a)*r*0.4,Math.sin(a)*r*0.4,r*0.12,0,Math.PI*2); ctx.fill();} }
+  else if (id==='trophy'){
+    ctx.beginPath(); ctx.moveTo(-r*0.5,-r*0.62); ctx.lineTo(r*0.5,-r*0.62); ctx.lineTo(r*0.36,r*0.05); ctx.lineTo(-r*0.36,r*0.05); ctx.closePath(); ctx.fill();
+    ctx.lineWidth=Math.max(2,s*0.1);
+    ctx.beginPath(); ctx.arc(-r*0.5,-r*0.32,r*0.22,Math.PI*0.5,Math.PI*1.5); ctx.stroke();
+    ctx.beginPath(); ctx.arc(r*0.5,-r*0.32,r*0.22,Math.PI*1.5,Math.PI*0.5,true); ctx.stroke();
+    ctx.fillRect(-r*0.09,r*0.05,r*0.18,r*0.32); ctx.fillRect(-r*0.32,r*0.37,r*0.64,r*0.14);
+  }
+  else if (id==='lock'){ ctx.lineWidth=Math.max(2,s*0.13); ctx.beginPath(); ctx.arc(0,-r*0.12,r*0.3,Math.PI,0); ctx.stroke(); roundRectPath(-r*0.42,-r*0.12,r*0.84,r*0.58,r*0.12); ctx.fill(); }
+  else if (id==='star'){ ctx.beginPath(); for(let i=0;i<10;i++){const a=i/10*Math.PI*2-Math.PI/2; const rr=i%2?r*0.4:r*0.95; ctx[i?'lineTo':'moveTo'](Math.cos(a)*rr,Math.sin(a)*rr);} ctx.closePath(); ctx.fill(); }
+  else if (id==='mute'){ ctx.beginPath(); ctx.moveTo(-r*0.15,-r*0.32); ctx.lineTo(-r*0.15,r*0.32); ctx.lineTo(r*0.08,r*0.32); ctx.lineTo(r*0.45,r*0.65); ctx.lineTo(r*0.45,-r*0.65); ctx.lineTo(r*0.08,-r*0.32); ctx.closePath(); ctx.fill(); ctx.lineWidth=Math.max(2,s*0.14); ctx.beginPath(); ctx.moveTo(-r*0.52,r*0.62); ctx.lineTo(r*0.62,-r*0.52); ctx.stroke(); }
+  ctx.restore();
+}
+
+// power-up symbols (drawn, themed by the power's colour)
+function drawPowerGlyph(type, cx, cy, s, color){
+  ctx.save(); ctx.translate(cx,cy); const r=s/2;
+  ctx.fillStyle=color; ctx.strokeStyle=color; ctx.lineWidth=Math.max(2,s*0.13); ctx.lineCap='round'; ctx.lineJoin='round';
+  if (type==='shield'){ ctx.beginPath(); ctx.moveTo(0,-r*0.82); ctx.lineTo(r*0.72,-r*0.45); ctx.lineTo(r*0.72,r*0.1); ctx.quadraticCurveTo(r*0.72,r*0.7,0,r*0.92); ctx.quadraticCurveTo(-r*0.72,r*0.7,-r*0.72,r*0.1); ctx.lineTo(-r*0.72,-r*0.45); ctx.closePath(); ctx.fill(); }
+  else if (type==='slow'){ ctx.beginPath(); ctx.arc(0,0,r*0.78,0,Math.PI*2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-r*0.46); ctx.moveTo(0,0); ctx.lineTo(r*0.4,r*0.12); ctx.stroke(); }
+  else if (type==='magnet'){ ctx.lineWidth=Math.max(3,s*0.24); ctx.beginPath(); ctx.arc(0,-r*0.12,r*0.52,Math.PI,0); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-r*0.52,-r*0.12); ctx.lineTo(-r*0.52,r*0.6); ctx.moveTo(r*0.52,-r*0.12); ctx.lineTo(r*0.52,r*0.6); ctx.stroke(); }
+  else if (type==='x2'){ ctx.beginPath(); for(let i=0;i<10;i++){const a=i/10*Math.PI*2-Math.PI/2; const rr=i%2?r*0.4:r*0.92; ctx[i?'lineTo':'moveTo'](Math.cos(a)*rr,Math.sin(a)*rr);} ctx.closePath(); ctx.fill(); }
+  ctx.restore();
 }
 
 function drawMenu(){
@@ -1668,7 +1708,7 @@ function drawMenu(){
   ctx.restore();
 
   // left = best/unlock text, right = coin icon + wallet, laid out centered together
-  const bestLabel = playMode==='levels' ? 'ปลดล็อกถึงด่าน '+unlockedLevel+'/'+MAX_LEVEL : '🏆 สูงสุด: '+best;
+  const bestLabel = playMode==='levels' ? 'Unlocked: '+unlockedLevel+'/'+MAX_LEVEL : 'Best: '+best;
   const wstr = ''+wallet;
   let fpx = 15;
   setFont(fpx, false);
@@ -1684,26 +1724,26 @@ function drawMenu(){
   ctx.fillText(wstr, coinX + r + gap, py+208);
 
   let by = py+228;
-  const modeLabel = playMode==='endless' ? '♾️  โหมด: ไม่จำกัด' : '🎯  โหมด: ผ่านด่าน';
+  const modeLabel = playMode==='endless' ? 'Mode: Endless' : 'Mode: Levels';
   const modeColor = playMode==='endless' ? '#46c9b3' : '#ff9f1c';
   button(px+15, by, pw-30, 36, modeLabel, modeColor, '#fff', ()=>{
     playMode = playMode==='endless' ? 'levels' : 'endless';
     savePlayMode(); Sound.score();
-  });
+  }, playMode==='endless'?'endless':'levels');
   by += 44;
 
   if (playMode==='endless') {   // theme picker (endless only — level themes are fixed)
     const sc = SCENES[endlessSceneIndex()];
-    button(px+15, by, pw-30, 36, sc.icon+'  ธีม: '+sc.name, '#9b7bff', '#fff', ()=>{ state=STATE.THEMES; });
+    button(px+15, by, pw-30, 36, 'Theme: '+sc.name, '#9b7bff', '#fff', ()=>{ state=STATE.THEMES; }, 'palette');
     by += 44;
   }
 
-  const playLabel = playMode==='endless' ? '▶  เล่น' : ' เลือกด่าน';
+  const playLabel = playMode==='endless' ? 'Play' : 'Select Level';
   button(px+50, by, pw-100, 44, playLabel, '#7ad24f', '#fff', ()=>{
     if (playMode==='endless') startGame(); else state = STATE.LEVELS;
-  });
+  }, playMode==='endless'?'play':'levels');
   by += 52;
-  button(px+50, by, pw-100, 40, '🛒  ร้านค้า', '#4a90d9', '#fff', ()=>{ state=STATE.SHOP; });
+  button(px+50, by, pw-100, 40, 'Shop', '#4a90d9', '#fff', ()=>{ state=STATE.SHOP; }, 'shop');
 }
 
 // Hand-drawn vector icon per scene — pure shapes/paths, no font or emoji
@@ -1777,12 +1817,12 @@ function drawThemes(){
   panel(px,py,pw,ph);
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillStyle='#ff7b3a'; ctx.font='bold 26px Mali';
-  ctx.fillText('🎨 เลือกธีม', W/2, py+30);
+  ctx.fillText('Select Theme', W/2, py+30);
   ctx.fillStyle='#888';
   // too long to safely fit one line on a phone at any readable size — wrap it
   setFont(13, false);
-  ctx.fillText('ธีมจะคงเดิมทั้งรอบ', W/2, py+50);
-  ctx.fillText('(เช้า/เย็น/กลางคืนยังเปลี่ยน)', W/2, py+68);
+  ctx.fillText('Theme stays all run', W/2, py+50);
+  ctx.fillText('(day / night still cycles)', W/2, py+68);
 
   const cols=2, cw=140, ch=78, gapx=16, gapy=14;
   const gx0 = px + (pw - (cols*cw + (cols-1)*gapx))/2, gy0 = py+96;
@@ -1803,7 +1843,7 @@ function drawThemes(){
     uiButtons.push({x,y,w:cw,h:ch, action:()=>{ endlessTheme=sc.id; saveEndlessTheme(); Sound.score(); }});
   });
 
-  button(px+pw/2-75, py+ph-50, 150, 40, '←  กลับ', '#9b7bff','#fff', ()=>{ state=STATE.MENU; });
+  button(px+pw/2-75, py+ph-50, 150, 40, 'Back', '#9b7bff','#fff', ()=>{ state=STATE.MENU; }, 'back');
 }
 
 function drawOver(){
@@ -1811,36 +1851,36 @@ function drawOver(){
   panel(px,py,pw,ph);
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillStyle='#ff5a5a'; ctx.font='bold 38px Mali';
-  ctx.fillText('เกมจบ!', W/2, py+40);
+  ctx.fillText('Game Over', W/2, py+40);
 
   ctx.fillStyle='#666'; ctx.font='16px Mali';
-  ctx.fillText(playMode==='levels' ? 'ด่าน '+level+' (เป้าหมาย '+LEVEL_GOAL+')' : 'คะแนน', W/2, py+82);
+  ctx.fillText(playMode==='levels' ? 'Level '+level+' (goal '+LEVEL_GOAL+')' : 'Score', W/2, py+82);
   ctx.fillStyle='#333'; ctx.font='bold 48px Mali';
   ctx.fillText(score, W/2, py+118);
 
   if (playMode === 'levels') {
     ctx.fillStyle = '#4a90d9';
-    const unlockLine = 'ปลดล็อกถึงด่าน '+unlockedLevel+'/'+MAX_LEVEL;
+    const unlockLine = 'Unlocked: '+unlockedLevel+'/'+MAX_LEVEL;
     fitFont(unlockLine, pw-30, 15, false);
     ctx.fillText(unlockLine, W/2, py+154);
   } else {
     ctx.fillStyle = newRecord ? '#ff9f1c' : '#888';
-    const recordLine = newRecord ? '🎉 สถิติใหม่!' : '🏆 สูงสุด: '+best;
+    const recordLine = newRecord ? 'New Best!' : 'Best: '+best;
     fitFont(recordLine, pw-30, 15, newRecord);
     ctx.fillText(recordLine, W/2, py+154);
   }
 
-  coinLabel('รอบนี้ '+coinCount+'  /  รวม '+wallet, W/2, py+182, 15, false, '#b8860b');
+  coinLabel('This run '+coinCount+'   /   Total '+wallet, W/2, py+182, 15, false, '#b8860b');
 
   if (frame-overFrame>25){
     const bw=pw-90;
-    button(px+45, py+202, bw, 42, '🔄  เล่นอีกครั้ง', '#7ad24f','#fff', ()=>reset());
+    button(px+45, py+202, bw, 42, 'Play Again', '#7ad24f','#fff', ()=>reset(), 'retry');
     const hw=(bw-10)/2;
-    button(px+45,       py+252, hw, 36, '🛒 ร้าน', '#4a90d9','#fff', ()=>{ state=STATE.SHOP; });
+    button(px+45,       py+252, hw, 36, 'Shop', '#4a90d9','#fff', ()=>{ state=STATE.SHOP; }, 'shop');
     if (playMode === 'levels')
-      button(px+55+hw, py+252, hw, 36, 'ด่าน', '#9b7bff','#fff', ()=>{ state=STATE.LEVELS; });
+      button(px+55+hw, py+252, hw, 36, 'Level', '#9b7bff','#fff', ()=>{ state=STATE.LEVELS; }, 'levels');
     else
-      button(px+55+hw, py+252, hw, 36, '🏠 เมนู', '#9b7bff','#fff', ()=>{ state=STATE.MENU; });
+      button(px+55+hw, py+252, hw, 36, 'Menu', '#9b7bff','#fff', ()=>{ state=STATE.MENU; }, 'menu');
   }
 }
 
@@ -1849,22 +1889,22 @@ function drawWin(){
   panel(px,py,pw,ph);
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillStyle='#ffb800'; ctx.font='bold 28px Mali';
-  ctx.fillText('🏆 ผ่านครบ '+MAX_LEVEL+' ด่าน!', W/2, py+42);
+  ctx.fillText('All '+MAX_LEVEL+' Levels Cleared!', W/2, py+42);
 
   ctx.fillStyle='#666'; ctx.font='16px Mali';
-  ctx.fillText('คุณคือนักบินมือฉมัง!', W/2, py+86);
+  ctx.fillText('You are an ace pilot!', W/2, py+86);
 
   ctx.fillStyle='#ff9f1c'; ctx.font='bold 17px Mali';
-  ctx.fillText('🎉 ปลดล็อกครบทุกด่านแล้ว', W/2, py+122);
+  ctx.fillText('All levels unlocked', W/2, py+122);
 
-  coinLabel('รอบนี้ '+coinCount+'  /  รวม '+wallet, W/2, py+156, 15, false, '#b8860b');
+  coinLabel('This run '+coinCount+'   /   Total '+wallet, W/2, py+156, 15, false, '#b8860b');
 
   if (frame-overFrame>25){
     const bw=pw-90;
-    button(px+45, py+178, bw, 42, '🔁  เล่นด่าน 1 ใหม่', '#7ad24f','#fff', ()=>startLevel(1));
+    button(px+45, py+178, bw, 42, 'Replay Level 1', '#7ad24f','#fff', ()=>startLevel(1), 'retry');
     const hw=(bw-10)/2;
-    button(px+45,       py+228, hw, 36, '🛒 ร้าน', '#4a90d9','#fff', ()=>{ state=STATE.SHOP; });
-    button(px+55+hw,    py+228, hw, 36, 'ด่าน', '#9b7bff','#fff', ()=>{ state=STATE.LEVELS; });
+    button(px+45,       py+228, hw, 36, 'Shop', '#4a90d9','#fff', ()=>{ state=STATE.SHOP; }, 'shop');
+    button(px+55+hw,    py+228, hw, 36, 'Level', '#9b7bff','#fff', ()=>{ state=STATE.LEVELS; }, 'levels');
   }
 }
 
@@ -1873,21 +1913,21 @@ function drawLevelClear(){
   panel(px,py,pw,ph);
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillStyle='#5fae37'; ctx.font='bold 28px Mali';
-  ctx.fillText('🎉 ผ่านด่าน '+level+' แล้ว!', W/2, py+44);
+  ctx.fillText('Level '+level+' Cleared!', W/2, py+44);
 
   ctx.fillStyle='#666'; ctx.font='16px Mali';
-  ctx.fillText('คะแนน', W/2, py+90);
+  ctx.fillText('Score', W/2, py+90);
   ctx.fillStyle='#333'; ctx.font='bold 44px Mali';
   ctx.fillText(score, W/2, py+126);
 
-  coinLabel('รอบนี้ '+coinCount+'  /  รวม '+wallet, W/2, py+160, 15, false, '#b8860b');
+  coinLabel('This run '+coinCount+'   /   Total '+wallet, W/2, py+160, 15, false, '#b8860b');
 
   if (frame-overFrame>25){
     const bw=pw-90;
-    button(px+45, py+182, bw, 42, '▶  ด่าน '+(level+1), '#7ad24f','#fff', ()=>startLevel(level+1));
+    button(px+45, py+182, bw, 42, 'Level '+(level+1), '#7ad24f','#fff', ()=>startLevel(level+1), 'play');
     const hw=(bw-10)/2;
-    button(px+45,       py+232, hw, 36, '🛒 ร้าน', '#4a90d9','#fff', ()=>{ state=STATE.SHOP; });
-    button(px+55+hw,    py+232, hw, 36, 'ด่าน', '#9b7bff','#fff', ()=>{ state=STATE.LEVELS; });
+    button(px+45,       py+232, hw, 36, 'Shop', '#4a90d9','#fff', ()=>{ state=STATE.SHOP; }, 'shop');
+    button(px+55+hw,    py+232, hw, 36, 'Level', '#9b7bff','#fff', ()=>{ state=STATE.LEVELS; }, 'levels');
   }
 }
 
@@ -1897,9 +1937,9 @@ function drawLevels(){
   panel(px,py,pw,ph);
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillStyle='#ff7b3a'; ctx.font='bold 26px Mali';
-  ctx.fillText('เลือกด่าน', W/2, py+32);
+  ctx.fillText('Select Level', W/2, py+32);
   ctx.fillStyle='#888'; ctx.font='13px Mali';
-  ctx.fillText('ผ่านด่านก่อนหน้าเพื่อปลดล็อกด่านต่อไป', W/2, py+58);
+  ctx.fillText('Clear a level to unlock the next', W/2, py+58);
 
   const tileH=58, gap=14, gx=px+30, gw=pw-60, gy0=py+82;
   for (let i=1;i<=MAX_LEVEL;i++){
@@ -1915,15 +1955,15 @@ function drawLevels(){
 
     ctx.textAlign='left'; ctx.fillStyle = unlocked ? '#333' : '#999';
     ctx.font='bold 20px Mali';
-    ctx.fillText('ด่าน '+i, gx+20, y+tileH/2);
+    ctx.fillText('Level '+i, gx+20, y+tileH/2);
 
     ctx.textAlign='right';
     if (!unlocked){
-      ctx.font='20px Mali, sans-serif'; ctx.fillText('🔒', gx+gw-18, y+tileH/2);
+      drawIcon('lock', gx+gw-26, y+tileH/2, 20, '#bbb');
     } else if (cleared){
-      ctx.fillStyle='#5fae37'; ctx.font='bold 16px Mali'; ctx.fillText('✓ ผ่านแล้ว', gx+gw-18, y+tileH/2);
+      ctx.fillStyle='#5fae37'; ctx.font='bold 16px Mali'; ctx.fillText('Cleared', gx+gw-18, y+tileH/2);
     } else {
-      ctx.fillStyle='#ff9f1c'; ctx.font='bold 16px Mali'; ctx.fillText('▶ เล่น', gx+gw-18, y+tileH/2);
+      ctx.fillStyle='#ff9f1c'; ctx.font='bold 16px Mali'; ctx.fillText('Play', gx+gw-18, y+tileH/2);
     }
 
     uiButtons.push({x:gx,y,w:gw,h:tileH, action:()=>{
@@ -1931,7 +1971,7 @@ function drawLevels(){
     }});
   }
 
-  button(px+pw/2-75, py+ph-50, 150, 40, '←  กลับ', '#9b7bff','#fff', ()=>{ state=STATE.MENU; });
+  button(px+pw/2-75, py+ph-50, 150, 40, 'Back', '#9b7bff','#fff', ()=>{ state=STATE.MENU; }, 'back');
 }
 
 function drawShop(){
@@ -1940,8 +1980,8 @@ function drawShop(){
   panel(px,py,pw,ph);
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillStyle='#ff7b3a'; ctx.font='bold 27px Mali';
-  ctx.fillText('🛒 ร้านสกินนก', W/2, py+28);
-  coinLabel('เหรียญสะสม: '+wallet, W/2, py+55, 17, true, '#b8860b');
+  ctx.fillText('Bird Shop', W/2, py+28);
+  coinLabel('Coins: '+wallet, W/2, py+55, 17, true, '#b8860b');
 
   const cols=3, cw=98, ch=104, gx0=px+(pw-(cols*cw+(cols-1)*12))/2, gy0=py+78;
   SKINS.forEach((sk,i)=>{
@@ -1963,14 +2003,14 @@ function drawShop(){
     ctx.restore();
     // badges
     ctx.textAlign='left'; ctx.textBaseline='alphabetic';
-    if (sk.fx){ ctx.font='13px Mali, sans-serif'; ctx.fillText('✨', x+8, y+18); }
-    if (!owned){ ctx.font='15px Mali, sans-serif'; ctx.textAlign='right'; ctx.fillText('🔒', x+cw-8, y+18); }
+    if (sk.fx){ drawIcon('star', x+15, y+14, 14, '#ffd23f'); }
+    if (!owned){ drawIcon('lock', x+cw-15, y+14, 16, '#bbb'); }
     // name
     ctx.fillStyle='#444'; ctx.font='bold 13px Mali'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText(sk.name, x+cw/2, y+68);
     // status line
-    if (sel){ ctx.fillStyle='#5fae37'; ctx.font='bold 13px Mali'; ctx.fillText('✓ ใช้อยู่', x+cw/2, y+88); }
-    else if (owned){ ctx.fillStyle='#4a90d9'; ctx.font='13px Mali'; ctx.fillText('แตะเพื่อใช้', x+cw/2, y+88); }
+    if (sel){ ctx.fillStyle='#5fae37'; ctx.font='bold 13px Mali'; ctx.fillText('Equipped', x+cw/2, y+88); }
+    else if (owned){ ctx.fillStyle='#4a90d9'; ctx.font='13px Mali'; ctx.fillText('Tap to equip', x+cw/2, y+88); }
     else { coinLabel(''+sk.price, x+cw/2, y+90, 13, true, wallet>=sk.price?'#b8860b':'#c0392b'); }
     // tile action
     uiButtons.push({x,y,w:cw,h:ch, action:()=>{
@@ -1980,16 +2020,16 @@ function drawShop(){
     }});
   });
 
-  button(px+pw/2-75, py+ph-50, 150, 40, '←  กลับ', '#9b7bff','#fff', ()=>{ state=STATE.MENU; });
+  button(px+pw/2-75, py+ph-50, 150, 40, 'Back', '#9b7bff','#fff', ()=>{ state=STATE.MENU; }, 'back');
 }
 
 function drawPauseOverlay(){
   ctx.fillStyle='rgba(0,0,0,.4)'; ctx.fillRect(0,0,W,PLAYFIELD);
   ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.font='bold 40px Mali';
-  ctx.fillText('⏸ พัก', W/2, PLAYFIELD/2);
+  ctx.fillText('Paused', W/2, PLAYFIELD/2);
   ctx.font='16px Mali';
-  ctx.fillText('แตะ หรือ กด P เพื่อเล่นต่อ', W/2, PLAYFIELD/2+40);
+  ctx.fillText('Tap or press P to resume', W/2, PLAYFIELD/2+40);
 }
 
 /* ----------------------------- Main loop --------------------------------- */
