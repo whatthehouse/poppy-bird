@@ -2,3 +2,6 @@ node_modules/
 *.wav
 *.mp3
 Firefly*.png
+
+.claude/
+assets/backgrounds/Gemini_*.png
